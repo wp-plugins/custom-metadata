@@ -19,23 +19,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/*
-x_add_metadata_field('fieldName1', 'post-type', array(
-	'group' => '' // To which meta_box the field should be added. If not specified, a new one will be created
-	, 'label' => '' // Label for the field
-	, 'description' => '' // Description of the field, displayed below the input
-	, field_type => 'text' // The type of field; possibly values: text, checkbox, radio, select, image
-	, values => array() // values for select, checkbox, radio buttons
-	, default => ''
-	, display_callback => '' // function to custom render the input
-	, save_callback => '' // function name for saving
-	, client_validation_callback => '' // function name for client-side validation
-	, server_validation_callback => '' // function name for server-side validation
-	, 'display_column' => false // Add the field to the columns when viewing all posts
-	, 'add_to_quick_edit' => false // Add the field to Quick edit
-) );
-*/
-
 add_action( 'init', 'init_my_custom_post_types' );
 
 function init_my_custom_post_types() {
@@ -225,10 +208,6 @@ function init_my_custom_fields() {
 		
 		));
 		
-		x_add_metadata_group( 'x_milestone-info', 'milestone', $args = array(
-			'label' => 'Milestone Info'
-		) );
-		
 		x_add_metadata_field('x_cap-limited-field', 'post', array(
 			'label' => 'Cap Limited Field (edit_posts)'
 			, 'required_cap' => 'edit_posts' // limit to users who can edit posts
@@ -243,6 +222,10 @@ function init_my_custom_fields() {
 			'label' => 'Cap Limited Field (author)'
 			, 'required_cap' => 'author' // limit to authors
 		));
+		
+		x_add_metadata_group( 'x_milestone-info', 'milestone', $args = array(
+			'label' => 'Milestone Info'
+		) );
 		
 		x_add_metadata_field('x_year', 'milestone', array(
 			'group' => 'x_milestone-info'
