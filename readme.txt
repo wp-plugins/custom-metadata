@@ -39,7 +39,7 @@ Because the UI thing has [been](http://wordpress.org/extend/plugins/verve-meta-b
 
 This is also a developer feature, aimed towards site builders. And real developers don't need UIs ;)
 
-= Why isn't the function just `add_metdata_field`? Do you really need the stupid `x_`?
+= Why isn't the function just `add_metdata_field`? Do you really need the stupid `x_`? =
 
 I'm being good and ["namespacing" my public functions](http://andrewnacin.com/2010/05/11/in-wordpress-prefix-everything/). You should too.
 
