@@ -82,12 +82,16 @@ You can get the data as you normally would using the `get_metadata` function. Cu
 
 A group is essentially a metabox that groups together multiple fields. Register the group before any fields
 
-`x_add_metadata_group( $slug, $object_types, $args );`
+`
+x_add_metadata_group( $slug, $object_types, $args );
+`
 
-`$slug` (string) The key under which the metadata will be stored.
+**Parameters**
 
-`$object_types` (string|array) The object types to which this field should be added. Supported: post, page, any custom post type, user.
+* `$slug` (string) The key under which the metadata will be stored.
+* `$object_types` (string|array) The object types to which this field should be added. Supported: post, page, any custom post type, user.
 
+**Overrides**
 `
 $args = array(
 	'label' => $group_slug // Label for the group
@@ -101,10 +105,12 @@ $args = array(
 
 `x_add_metadata_field( $slug, $object_types, $args );`
 
-`$slug` (string) The key under which the metadata will be stored. For post_types, prefix the slug with an underscore (e.g. `_hidden`) to hide it from the the Custom Fields box.
+**Parameters**
 
-`$object_types` (string|array) The object types to which this field should be added. Supported: post, page, any custom post type, user.
+* `$slug` (string) The key under which the metadata will be stored. For post_types, prefix the slug with an underscore (e.g. `_hidden`) to hide it from the the Custom Fields box.
+* `$object_types` (string|array) The object types to which this field should be added. Supported: post, page, any custom post type, user.
 
+**Overrides**
 `
 $args = array( 
 	'group' => '' // The slug of group the field should be added to. This needs to be registered with x_add_metadata_group first.
