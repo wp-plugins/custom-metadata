@@ -1,0 +1,123 @@
+=== Custom Metadata Manager ===
+Contributors: batmoo
+Donate link: http://digitalize.ca/donate
+Tags: custom metadata, metadata, postmeta, post meta, user meta, custom post types, custom fields
+Requires at least: 3.0
+Tested up to: 3.0.1
+Stable tag: 0.1
+
+An easy way to add custom fields to your object types (post, pages, custom post types, users)
+
+== Description ==
+
+An easy way to add custom fields to your object types (post, pages, custom post types, users).
+
+The goal of this plugin is to help you rapidply build familiar, intuitive interfaces for your users in a very WordPress-native way. 
+
+The custom field panel is nice, but not quite the easiest thing for users to work with. Adding your own metaboxes and fields involves a lot of time and repetitive code that could be better used elsewhere.
+
+This plugin handles all that heavy-lifting for you behind-the-scenes, so that you can focus on more on building out and connecting your data rather than all the minor details. This single piece of code `add_metadata_field( 'my-field-name', 'post' );` generates a metabox with a text field inside it, with the necessary hooks to save the entered values.
+
+The API is similar to that used for registering custom post types and taxonomies so it should be familiar territory.
+
+Like what you see? Want more field types and features added? [Get in touch](mailto:batmoo@gmail.com)
+
+> *See "Other Notes" section for usage information*
+
+== Installation ==
+
+1. Install through the WordPress admin or upload the plugin folder to your `/wp-content/plugins/` directory
+1. Activate the plugin through the 'Plugins' menu in WordPress
+1. Add the necessary code to register your custom groups and fields to your functions.php or plugin.
+1. Enjoy!
+
+== Frequently Asked Questions ==
+
+= Why a code-based approach instead of a UI? =
+
+Because the UI thing has [been](http://wordpress.org/extend/plugins/verve-meta-boxes/) [done](http://wordpress.org/extend/plugins/fresh-page/) [before](http://wordpress.org/extend/plugins/pods/). And this more closely aligns with the existing WordPress approach of registering new types of content (post types, taxonomies, etc.)
+
+This is also a developer feature, aimed towards site builders. And real developers don't need UIs ;)
+
+= Why isn't the function just `add_metdata_field`? Do you really need the stupid `x_`?
+
+I'm being good and ["namespacing" my public functions](http://andrewnacin.com/2010/05/11/in-wordpress-prefix-everything/). You should too.
+
+== Screenshots ==
+
+1. Write easy, intuitive and WordPress-like code to add new fields.
+2. Custom Metadata Manager supports basic field types with an way to render your own.
+3. An example of what's possible with only 40 lines of code.
+4. Adding custom columns is also easy.
+
+== Changelog ==
+
+= 0.1 =
+* Initial release
+
+== Usage ==
+
+= Object Types =
+
+The main idea behind this plugin is to have a single API to work with regardless of the object type. Currently, Custom Metadata Manager works with `user` and any built-in or custom post types, e.g. `post`, `page`, etc. Comments support will be added in the future.
+
+= Registering your fields = 
+
+For the sake of performance (and to avoid potential race conditions), always register your custom fields in the `admin_init` hook. This way your front-end doesn't get bogged down with unnecessary processing and you can be sure that your fields will be registered safely. Here's a code sample:
+
+`
+add_action( 'admin_init', 'my_theme_init_custom_fields' );
+
+function my_theme_ainit_custom_fields() {
+	x_add_metadata_field( 'my_field', array( 'user', 'post' ) );
+}
+`
+
+= Getting the data = 
+
+You can get the data as you normally would using the `get_metadata` function. Custom Metadata manager stores all data using the WordPress metadata APIs using the slug name you provide. That way, even if you decide to deactivate this wonderful plugin, your data is safe and accessible.
+
+
+= Adding Metadata Groups =
+
+A group is essentially a metabox that groups together multiple fields. Register the group before any fields
+
+`x_add_metadata_group( $slug, $object_types, $args );`
+
+`$slug` (string) The key under which the metadata will be stored.
+
+`$object_types` (string|array) The object types to which this field should be added. Supported: post, page, any custom post type, user.
+
+`
+$args = array(
+	'label' => $group_slug // Label for the group
+	, 'context' => 'normal' // (post only)
+	, 'priority' => 'default' // (post only)
+	, 'autosave' => false // (post only) Should the group be saved in autosave? NOT IMPLEMENTED YET!
+);
+`
+
+= Adding Metadata Fields =
+
+`x_add_metadata_field( $slug, $object_types, $args );`
+
+`$slug` (string) The key under which the metadata will be stored. For post_types, prefix the slug with an underscore (e.g. `_hidden`) to hide it from the the Custom Fields box.
+
+`$object_types` (string|array) The object types to which this field should be added. Supported: post, page, any custom post type, user.
+
+`
+$args = array( 
+	'group' => '' // The slug of group the field should be added to. This needs to be registered with x_add_metadata_group first.
+	, 'field_type' => 'text' // The type of field; possible values: text, checkbox, radio, select
+	, 'label' => '' // Label for the field
+	, 'description' => '' // Description of the field, displayed below the input
+	, 'values' => array() // Values for select and radio buttons. Associative array
+	, 'display_callback' => '' // Callback to custom render the field
+	, 'sanitize_callback' => '' // Callback to sanitize data before it's saved
+	, 'display_column' => false // Add the field to the columns when viewing all posts
+	, 'display_column_callback' => '' // Callback to render output for the custom column
+	, 'required_cap' => '' // The cap required to view and edit the field
+);
+`
+
+For examples, please see the [custom_metadata_examples.php](http://svn.wp-plugins.org/custom-metadata/trunk/custom_metadata_examples.php) file included with the plugin. Set WP_DEBUG to true to see it in action.

@@ -1,0 +1,254 @@
+<?php
+/*
+Copyright 2010 Mohammad Jangda
+
+GNU General Public License, Free Software Foundation <http://creativecommons.org/licenses/GPL/2.0/>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+/*
+x_add_metadata_field('fieldName1', 'post-type', array(
+	'group' => '' // To which meta_box the field should be added. If not specified, a new one will be created
+	, 'label' => '' // Label for the field
+	, 'description' => '' // Description of the field, displayed below the input
+	, field_type => 'text' // The type of field; possibly values: text, checkbox, radio, select, image
+	, values => array() // values for select, checkbox, radio buttons
+	, default => ''
+	, display_callback => '' // function to custom render the input
+	, save_callback => '' // function name for saving
+	, client_validation_callback => '' // function name for client-side validation
+	, server_validation_callback => '' // function name for server-side validation
+	, 'display_column' => false // Add the field to the columns when viewing all posts
+	, 'add_to_quick_edit' => false // Add the field to Quick edit
+) );
+*/
+
+add_action( 'init', 'init_my_custom_post_types' );
+
+function init_my_custom_post_types() {
+	register_post_type( 'custom-metatadata-milestone', array(
+		'labels' => array(
+			'name' => 'Milestones'
+			, 'singualar_name' => 'Milestone'
+			, 'add_new' => 'Add New'
+			, 'add_new_item' => 'Add New Milestone'
+			, 'edit_item' => 'Edit Milestone'
+			, 'new_item' => 'Add Milestone'
+			, 'view_item' => 'View Milestone'
+			, 'search_items' => 'Search Milestones'
+			, 'not_found' => 'No Milestones found'
+			, 'not_found_in_trash' => 'No Milestones found in Trash'
+		),
+		'public'  => true,
+		'capability_type' => 'post',
+		'hierarchical' => false,
+		'rewrite' => true,
+		'query_var' => false,
+		'taxonomies' => array( 'milestone-category' ),
+		'supports' => array( 'title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', 'revisions' ),
+	) );
+}
+
+add_action( 'admin_init', 'init_my_custom_fields' );
+
+function init_my_custom_fields() {
+	
+	if( function_exists( 'x_add_metadata_group' ) && function_exists( 'x_add_metadata_field' ) ) {
+		x_add_metadata_group( 'x_metaBox1', 'post', $args = array(
+			'label' => 'Group with Multiple Fields'
+		) );
+		
+		x_add_metadata_group( 'x_metaBox2', array( 'post', 'user' ), $args = array(
+			'label' => 'Group for Post and User'
+		) );
+		
+		x_add_metadata_field('x_fieldName1', 'post', array(
+			'group' => 'x_metaBox1'
+			, 'description' => 'This is field #1. It\'s a simple text field.'
+			, 'label' => 'Field #1'
+			, 'display_column' => true
+		));
+		
+		x_add_metadata_field('x_fieldName2', 'post', array(
+			'group' => 'x_metaBox1'
+			, 'display_column' => 'My Column (with Custom Callback)'
+			, 'display_column_callback' => 'fieldName2_columnCallback'
+		));
+		
+		function fieldName2_columnCallback( $field_slug, $field, $object_type, $object_id, $value ) {
+			echo sprintf( 'The value of field "%s" is %s. <br /><a href="http://icanhascheezburger.files.wordpress.com/2010/10/04dc84b6-3dde-45db-88ef-f7c242731ce3.jpg">Here\'s a LOLCat</a>', $field_slug, $value ? $value : 'not set' );
+		}
+		
+		x_add_metadata_field('x_fieldCheckbox1', 'post', array(
+			'group' => 'x_metaBox1'
+			, 'field_type' => 'checkbox'
+		));
+		
+		x_add_metadata_field('x_fieldRadio1', 'post', array(
+			'group' => 'x_metaBox1'
+			, 'field_type' => 'radio'
+			, 'values' => array( 
+				'option1' => 'Option #1'
+				, 'option2' => 'Option #2'
+			)
+		));
+		
+		x_add_metadata_field('x_fieldSelect1', 'post', array(
+			'group' => 'x_metaBox1'
+			, 'field_type' => 'select'
+			, 'values' => array( 
+				'option1' => 'Option #1'
+				, 'option2' => 'Option #2'
+			)
+		));
+		
+		x_add_metadata_field('x_fieldName3', 'post', array(
+		
+		));
+		
+		x_add_metadata_field('x_fieldCustomHidden1', 'post', array(
+			'group' => 'x_metaBox1'
+			, 'display_callback' => 'fieldCustomHidden1_display'
+		));
+		
+		function fieldCustomHidden1_display( $field_slug, $field, $value ) {
+			if( ! $value ) $value = 'This is a secret hidden value! Don\'t tell anyone!';
+			?>
+			<hr />
+			<p>This is a hidden field rendered with a custom callback. The value is "<?php echo $value; ?>".</p>
+			<input type="hidden" name="<?php echo $field_slug; ?>" value="<?php echo $value; ?>" />
+			<hr />
+			<?php
+		}
+		
+		x_add_metadata_field('x_fieldCustomList1[]', array( 'post', 'user' ), array(
+			'label' => 'Post Action Items'
+			, 'display_callback' => 'fieldCustomList1_display'
+			
+		));
+		
+		function fieldCustomList1_display( $field_slug, $field, $object_type, $object_id, $value ) {
+			$value = (array)$value;
+			$field_class = sprintf( 'field-%s', $field_slug );
+			?>
+			<p>This is an example field rendered with a custom display_callback. All done with about 40 lines of code!</p>
+			
+			<?php if( ! empty( $value ) ) : ?>
+				<?php foreach( $value as $v ) : ?>
+					<div class="my-list-item">
+						<input type="text" name="<?php echo $field_slug; ?>[]" value="<?php echo esc_attr( $v ); ?>" />
+						<a href="#" class="btn-del-list-item" style="color:red;">Delete</a>
+					</div>
+				<?php endforeach; ?>
+			<?php else : ?>
+				<input type="text" name="<?php $field_slug; ?>[]" value="" />
+			<?php endif; ?>
+			<p><a href="#" class="btn-add-list-item">+ Add New</a></p>
+			
+			<script>
+			;(function($) {
+				$('.btn-add-list-item').click(function(e) {
+					e.preventDefault();
+					var $last = $('.my-list-item:last');
+					var $clone = $last.clone();
+					
+					$clone
+						.insertAfter($last)
+						.find(':input')
+							.val('')
+						;
+				});
+				$('.btn-del-list-item').live('click', function(e) {
+					e.preventDefault();
+					$(this).parent().remove();
+				});
+			})(jQuery);
+			</script>
+			<?php
+		}
+		
+		x_add_metadata_field( 'x_search-engine', 'post', array(
+			'field_type' => 'radio'
+			, 'label' => 'Preferred Search Engine'
+			, 'values' => array( 
+				'google' => 'Google!'
+				, 'bing' => 'Bing!'
+			)
+			, 'display_column' => 'Blog Links'
+			, 'display_column_callback' => 'blog_links_column_callback'
+		));
+		
+		function blog_links_column_callback( $field_slug, $field, $object_type, $object_id, $value ) {
+			switch( $value ) {
+				case 'google':
+					$url = 'http://google.com';
+					break;
+				case 'bing':
+					$url = 'http://bing.com';
+					break;
+				default:
+					$url = '';
+					break;
+			}
+			if( $url )
+				return sprintf( '<a href="%s" target="_blank">Go to search</a>', $url );
+			return __( 'Search Engine not selected' );
+		}
+		
+		x_add_metadata_field('x_pageField1', 'page', array(
+			'display_column' => 'My Page Field'
+		));
+		
+		x_add_metadata_field('x_userField1', 'user', array(
+			'display_column' => true
+		));
+		
+		x_add_metadata_field('x_userCheckboxField1', 'user', array(
+			'label' => 'Checkbox says what?'
+			, 'field_type' => 'checkbox'
+		));
+		
+		x_add_metadata_field('x_userAndPostField1', array( 'post', 'user' ), array(
+		
+		));
+		
+		x_add_metadata_group( 'x_milestone-info', 'milestone', $args = array(
+			'label' => 'Milestone Info'
+		) );
+		
+		x_add_metadata_field('x_cap-limited-field', 'post', array(
+			'label' => 'Cap Limited Field (edit_posts)'
+			, 'required_cap' => 'edit_posts' // limit to users who can edit posts
+		));
+		
+		x_add_metadata_field('x_user-cap-limited-field', 'user', array(
+			'label' => 'Cap Limited Field (edit_user)'
+			, 'required_cap' => 'edit_user' // limit to users who can edit other users
+		));
+		
+		x_add_metadata_field('x_author-cap-limited-field', 'user', array(
+			'label' => 'Cap Limited Field (author)'
+			, 'required_cap' => 'author' // limit to authors
+		));
+		
+		x_add_metadata_field('x_year', 'milestone', array(
+			'group' => 'x_milestone-info'
+			, 'description' => 'Enter the year for this milestone, e.g. 1991'
+			, 'label' => 'Year'
+			, 'display_column' => true
+		));
+	}
+}
