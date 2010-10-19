@@ -1,7 +1,7 @@
 === Custom Metadata Manager ===
 Contributors: batmoo
 Donate link: http://digitalize.ca/donate
-Tags: custom metadata, metadata, postmeta, post meta, user meta, custom post types, custom fields
+Tags: custom metadata, custom metadata manager metadata, postmeta, post meta, user meta, custom post types, custom fields
 Requires at least: 3.0
 Tested up to: 3.0.1
 Stable tag: 0.1
@@ -16,7 +16,7 @@ The goal of this plugin is to help you rapidply build familiar, intuitive interf
 
 The custom field panel is nice, but not quite the easiest thing for users to work with. Adding your own metaboxes and fields involves a lot of time and repetitive code that could be better used elsewhere.
 
-This plugin handles all that heavy-lifting for you behind-the-scenes, so that you can focus on more on building out and connecting your data rather than all the minor details. This single piece of code `add_metadata_field( 'my-field-name', 'post' );` generates a metabox with a text field inside it, with the necessary hooks to save the entered values.
+This plugin handles all that heavy-lifting for you behind-the-scenes, so that you can focus on more on building out and connecting your data rather than all the minor details. This single piece of code `x_add_metadata_field( 'my-field-name', 'post' );` generates a metabox with a text field inside it, with the necessary hooks to save the entered values.
 
 The API is similar to that used for registering custom post types and taxonomies so it should be familiar territory.
 
@@ -48,7 +48,7 @@ I'm being good and ["namespacing" my public functions](http://andrewnacin.com/20
 1. Write easy, intuitive and WordPress-like code to add new fields.
 2. Custom Metadata Manager supports basic field types with an way to render your own.
 3. An example of what's possible with only 40 lines of code.
-4. Adding custom columns is also easy.
+4. Adding custom columns is also easy. You can go with a default display, or specify your own output callback
 
 == Changelog ==
 
@@ -61,6 +61,7 @@ I'm being good and ["namespacing" my public functions](http://andrewnacin.com/20
 
 The main idea behind this plugin is to have a single API to work with regardless of the object type. Currently, Custom Metadata Manager works with `user` and any built-in or custom post types, e.g. `post`, `page`, etc. Comments support will be added in the future.
 
+
 = Registering your fields = 
 
 For the sake of performance (and to avoid potential race conditions), always register your custom fields in the `admin_init` hook. This way your front-end doesn't get bogged down with unnecessary processing and you can be sure that your fields will be registered safely. Here's a code sample:
@@ -69,9 +70,12 @@ For the sake of performance (and to avoid potential race conditions), always reg
 add_action( 'admin_init', 'my_theme_init_custom_fields' );
 
 function my_theme_ainit_custom_fields() {
-	x_add_metadata_field( 'my_field', array( 'user', 'post' ) );
+	if( function_exists( 'x_add_metadata_field' ) && function_exists( 'x_add_metadata_group' ) ) {
+		x_add_metadata_field( 'my_field', array( 'user', 'post' ) );
+	}
 }
 `
+
 
 = Getting the data = 
 
@@ -86,10 +90,12 @@ A group is essentially a metabox that groups together multiple fields. Register 
 x_add_metadata_group( $slug, $object_types, $args );
 `
 
+
 **Parameters**
 
 * `$slug` (string) The key under which the metadata will be stored.
 * `$object_types` (string|array) The object types to which this field should be added. Supported: post, page, any custom post type, user.
+
 
 **Overrides**
 `
@@ -101,14 +107,17 @@ $args = array(
 );
 `
 
+
 = Adding Metadata Fields =
 
 `x_add_metadata_field( $slug, $object_types, $args );`
+
 
 **Parameters**
 
 * `$slug` (string) The key under which the metadata will be stored. For post_types, prefix the slug with an underscore (e.g. `_hidden`) to hide it from the the Custom Fields box.
 * `$object_types` (string|array) The object types to which this field should be added. Supported: post, page, any custom post type, user.
+
 
 **Overrides**
 `
@@ -126,4 +135,19 @@ $args = array(
 );
 `
 
+
+= Examples = 
 For examples, please see the [custom_metadata_examples.php](http://svn.wp-plugins.org/custom-metadata/trunk/custom_metadata_examples.php) file included with the plugin. Set WP_DEBUG to true to see it in action.
+
+= TODO =
+
+Stuff I have planned for the future:
+
+* Improved styling of rendered fields
+* Ability Pass in attributes for built-in fields
+* Additional field types
+* Autosave support for fields on post types
+* Support for comments as an object type
+* Option to enqueue scripts and styles
+* Client- and server-side validation support
+* Add groups and fields to Quick Edit
