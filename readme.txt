@@ -144,8 +144,9 @@ For examples, please see the [custom_metadata_examples.php](http://svn.wp-plugin
 Stuff I have planned for the future:
 
 * Improved styling of rendered fields
-* Ability Pass in attributes for built-in fields
+* Ability Pass in attributes for built-in fields (e.g. class, data-*, etc.)
 * Additional field types
+* Limit or exclude groups and fields for specific ids (e.g. show only on post id = 145)
 * Autosave support for fields on post types
 * Support for comments as an object type
 * Option to enqueue scripts and styles

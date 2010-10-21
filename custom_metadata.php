@@ -39,7 +39,9 @@ TODO:
 - Refactor field types code
 - Group description field
 
----
+- include / exclude specific ids
+-- Example: I only want a metabox and specifc fields to show up only on the 'About' and 'Contact' pages
+-- Should be able to specify roles for users?
 
 - Group caps?
 - Limit view of custom column based on caps?
@@ -48,7 +50,7 @@ TODO:
 -- default for custom posts: check custom post type object
 -- user: edit_user
 
-- custom styles + scripts
+- custom styles + scripts for fields
 - validation (pass in array of validation types, or string that references function)
 - quick edit
 
