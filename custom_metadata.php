@@ -130,11 +130,15 @@ class custom_metadata_manager {
 		
 		$object_type = $this->_get_object_type_context();
 		
+		// This is not really that clean, but it works. Damn inconsistencies!
 		if( post_type_exists( $object_type ) ) {
 			$column_header_name = sprintf( '%s_posts', $object_type );
 			$column_content_name = ( 'page' != $object_type ) ? 'posts' : 'pages';
+		} elseif( $object_type == 'comment' ) {
+			$column_header_name = 'edit-comments';
+			$column_content_name = 'comments';
 		} else {
-			//if( in_array( $object_type, $this->_builtin_object_types ) ) $column_name .= 's';
+			// users
 			$column_header_name = $column_content_name = $object_type . 's';
 		}
 
