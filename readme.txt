@@ -63,7 +63,7 @@ I'm being good and ["namespacing" my public functions](http://andrewnacin.com/20
 
 = Object Types =
 
-The main idea behind this plugin is to have a single API to work with regardless of the object type. Currently, Custom Metadata Manager works with `user` and any built-in or custom post types, e.g. `post`, `page`, etc. Comments support will be added in the future.
+The main idea behind this plugin is to have a single API to work with regardless of the object type. Currently, Custom Metadata Manager works with `user`, `comment` and any built-in or custom post types, e.g. `post`, `page`, etc.
 
 
 = Registering your fields = 
@@ -143,7 +143,7 @@ $args = array(
 = Examples = 
 For examples, please see the [custom_metadata_examples.php](http://svn.wp-plugins.org/custom-metadata/trunk/custom_metadata_examples.php) file included with the plugin. Set WP_DEBUG to true to see it in action.
 
-= TODO =
+= TODOs =
 
 Stuff I have planned for the future:
 
@@ -152,7 +152,6 @@ Stuff I have planned for the future:
 * Additional field types
 * Limit or exclude groups and fields for specific ids (e.g. show only on post id = 145)
 * Autosave support for fields on post types
-* Support for comments as an object type
 * Option to enqueue scripts and styles
 * Client- and server-side validation support
 * Add groups and fields to Quick Edit

@@ -53,7 +53,6 @@ TODO:
 - custom styles + scripts for fields
 - validation (pass in array of validation types, or string that references function)
 - quick edit
-- Comments support
 - Links support
 
 */
