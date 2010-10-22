@@ -68,6 +68,8 @@ class custom_metadata_manager {
 	var $_field_types = array( 'text', 'textarea', 'checkbox', 'radio', 'select' );
 	// Object types whose columns are generated through apply_filters instead of do_action
 	var $_column_filter_object_types = array( 'user' ); // taxonomies also apply
+	// Whitelisted pages that get stylesheets and scripts
+	var $_pages_whitelist = array( 'edit.php', 'post.php', 'users.php', 'profile.php', 'user-edit.php', 'edit-comments.php', 'comment.php' );
 	
 	function __construct( ) {
 		// We need to run these as late as possible!
@@ -83,8 +85,8 @@ class custom_metadata_manager {
 		global $pagenow;
 		
 		// Hook into load to initialize custom columns
-		// TODO: Should probably only call this on the Manage pages
-		add_action( 'load-' . $pagenow, array( &$this, 'init_columns' ) );
+		if( in_array( $pagenow, $this->_pages_whitelist ) )
+			add_action( 'load-' . $pagenow, array( &$this, 'init_columns' ) );
 		
 		// Handle actions related to posts
 		add_action( 'add_meta_boxes', array( &$this, 'add_post_metadata_groups' ) );
