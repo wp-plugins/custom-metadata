@@ -52,6 +52,10 @@ I'm being good and ["namespacing" my public functions](http://andrewnacin.com/20
 
 == Changelog ==
 
+= 0.2 =
+* Added a textarea field type
+* Added support for comments (you can now specify comments as an object type)
+
 = 0.1 =
 * Initial release
 
