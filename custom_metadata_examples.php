@@ -238,5 +238,10 @@ function init_my_custom_fields() {
 			, 'label' => 'Year'
 			, 'display_column' => true
 		));
+		
+		x_add_metadata_field('x_commentField1', 'comment', array(
+			'label' => 'Field for Comment'
+			, 'display_column' => true
+		));
 	}
 }

@@ -53,6 +53,8 @@ TODO:
 - custom styles + scripts for fields
 - validation (pass in array of validation types, or string that references function)
 - quick edit
+- Comments support
+- Links support
 
 */
 
@@ -60,14 +62,14 @@ class custom_metadata_manager {
 
 	var $errors = array();
 	var $metadata = array();
-	var $_non_post_types = array( 'user', 'comment' );
+	var $_non_post_types = array( 'user', 'comment' ); // TODO: Links go in here too
 	// Object types that come "built-in" with WordPress
-	var $_builtin_object_types = array( 'post', 'page', 'user', 'comment' );
+	var $_builtin_object_types = array( 'post', 'page', 'user', 'comment' ); // TODO: Links
 	// Column filter names
-	var $_column_types = array( 'posts', 'pages', 'users', 'comments' );
+	var $_column_types = array( 'posts', 'pages', 'users', 'comments' ); // TODO: Links
 	var $_field_types = array( 'text', 'textarea', 'checkbox', 'radio', 'select' );
 	// Object types whose columns are generated through apply_filters instead of do_action
-	var $_column_filter_object_types = array( 'user' ); // taxonomies also apply
+	var $_column_filter_object_types = array( 'user' );
 	// Whitelisted pages that get stylesheets and scripts
 	var $_pages_whitelist = array( 'edit.php', 'post.php', 'users.php', 'profile.php', 'user-edit.php', 'edit-comments.php', 'comment.php' );
 	
@@ -85,19 +87,9 @@ class custom_metadata_manager {
 		global $pagenow;
 		
 		// Hook into load to initialize custom columns
-		if( in_array( $pagenow, $this->_pages_whitelist ) )
-			add_action( 'load-' . $pagenow, array( &$this, 'init_columns' ) );
-		
-		// Handle actions related to posts
-		add_action( 'add_meta_boxes', array( &$this, 'add_post_metadata_groups' ) );
-		add_action( 'save_post', array( &$this, 'save_post_metadata' ) );
-		
-		// Handle actions related to users
-		add_action( 'edit_user_profile', array( &$this, 'add_user_metadata_groups' ) );
-		add_action( 'edit_user_profile_update', array( &$this, 'save_user_metadata' ) );
-		// Allow user-editable fields on "Your Profile"
-		add_action( 'show_user_profile', array( &$this, 'add_user_metadata_groups' ) );
-		add_action( 'personal_options_update', array( &$this, 'save_user_metadata' ) );
+		if( in_array( $pagenow, $this->_pages_whitelist ) ) {
+			add_action( 'load-' . $pagenow, array( &$this, 'init_metadata' ) );
+		}
 		
 		// Hook into admin_notices to show errors
 		if( current_user_can( 'manage_options' ) )
@@ -107,6 +99,31 @@ class custom_metadata_manager {
 	function init_object_types() {
 		foreach( array_merge( get_post_types(), $this->_builtin_object_types ) as $object_type )
 			$this->metadata[$object_type] = array();
+	}
+
+	function init_metadata() {
+		$object_type = $this->_get_object_type_context();
+		
+		$this->init_columns();
+		
+		// Handle actions related to users
+		// TODO: I really don't like hard-coding this...
+		if( $object_type == 'user' ) {
+			// Editing another user's profile
+			add_action( 'edit_user_profile', array( &$this, 'add_user_metadata_groups' ) );
+			add_action( 'edit_user_profile_update', array( &$this, 'save_user_metadata' ) );
+			// Allow user-editable fields on "Your Profile"
+			add_action( 'show_user_profile', array( &$this, 'add_user_metadata_groups' ) );
+			add_action( 'personal_options_update', array( &$this, 'save_user_metadata' ) );
+		} else {
+			
+			// Hook in to metaboxes
+			add_action( 'add_meta_boxes', array( &$this, "add_post_metadata_groups" ) );
+			
+			// Hook in to save
+			add_action( 'save_post', array( &$this, 'save_post_metadata' ) );
+			add_action( 'edit_comment', array( &$this, 'save_comment_metadata' ) );
+		}
 	}
 
 	function init_columns() {
@@ -135,19 +152,6 @@ class custom_metadata_manager {
 		else
 			add_filter( "manage_{$column_content_name}_custom_column", $custom_column_content_function, 10, 3 );
 		
-	}
-
-	function _get_object_type_context() {
-		global $current_screen;
-		
-		$object_type = '';
-		
-		if( isset( $current_screen->post_type ) )
-			$object_type = $current_screen->post_type;
-		else
-			$object_type = substr( $current_screen->base, 0, strlen( $current_screen->base ) - 1 );
-		
-		return $object_type; 
 	}
 	
 	function add_metadata_column_headers( $columns ) {
@@ -329,9 +333,8 @@ class custom_metadata_manager {
 	}
 	
 	function add_post_metadata_groups() {
-		global $current_screen;
 		
-		$post_type = $current_screen->post_type;
+		$post_type = $this->_get_object_type_context();
 		
 		$groups = $this->get_groups_in_object_type( $post_type );
 		
@@ -403,20 +406,29 @@ class custom_metadata_manager {
 		$this->_display_group_nonce( $group_slug, $object_type );
 	}
 	
-	function _display_post_metadata_box( $post, $meta_box ) {
+	function _display_post_metadata_box( $object, $meta_box ) {
 		
 		$group_slug = $meta_box['id'];
 		$group = $meta_box['args']['group'];
 		$fields = $meta_box['args']['fields'];
-		$post_type = $post->post_type;
-		$post_id = $post->ID;
+		$object_type = $this->_get_object_type_context();
+		
+		// I really don't like using variable variables, but this is the path of least resistence.
+		if( isset( $object->{$object_type . '_ID'} ) ) {
+			$object_id =  $object->{$object_type . '_ID'};
+		} elseif ( isset( $object->ID ) ) {
+			$object_id = $object->ID;
+		} else {
+			_e( 'Uh oh, something went wrong!', 'custom-metadata-manager' );
+			return;
+		}
 		
 		foreach( $fields as $field_slug => $field ) {
-			$this->_display_metadata_field( $field_slug, $field, $post_type, $post_id );
+			$this->_display_metadata_field( $field_slug, $field, $object_type, $object_id );
 		}
 		
 		// Each group gets its own nonce
-		$this->_display_group_nonce( $group_slug, $post_type );
+		$this->_display_group_nonce( $group_slug, $object_type );
 	}
 	
 	function _display_group_nonce( $group_slug, $object_type ) {
@@ -441,14 +453,12 @@ class custom_metadata_manager {
 		$groups = $this->get_groups_in_object_type( $object_type );
 		
 		foreach( $groups as $group_slug => $group ) {
-			$this->save_user_metadata_group( $group_slug, $group, $object_type, $user_id );
+			$this->save_metadata_group( $group_slug, $group, $object_type, $user_id );
 		}
 	}
 	
 	function save_post_metadata( $post_id ) {
-		global $current_screen;
-		
-		$post_type = $current_screen->post_type;
+		$post_type = $this->_get_object_type_context();
 		$groups = $this->get_groups_in_object_type( $post_type );
 		
 		foreach( $groups as $group_slug => $group ) {
@@ -456,16 +466,17 @@ class custom_metadata_manager {
 			if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE && !$group->autosave ) 
 				return $post_id;
 			
-			$this->save_post_metadata_group( $group_slug, $group, $post_type, $post_id );
+			$this->save_metadata_group( $group_slug, $group, $post_type, $post_id );
 		}
 	}
 	
-	function save_user_metadata_group( $group_slug, $group, $object_type, $user_id ) {
-		$this->save_metadata_group( $group_slug, $group, $object_type, $user_id );
-	}
-	
-	function save_post_metadata_group( $group_slug, $group, $post_type, $post_id ) {
-		$this->save_metadata_group( $group_slug, $group, $post_type, $post_id );
+	function save_comment_metadata( $comment_id ) {
+		$object_type = 'comment';
+		$groups = $this->get_groups_in_object_type( $object_type );
+		
+		foreach( $groups as $group_slug => $group ) {
+			$this->save_metadata_group( $group_slug, $group, $object_type, $comment_id );
+		}
 	}
 	
 	function save_metadata_group( $group_slug, $group, $object_type, $object_id ) {
@@ -598,6 +609,25 @@ class custom_metadata_manager {
 		// TODO: Build this out
 		// Built-in metaboxes: title, custom-fields, revisions, author, etc.
 		return false;
+	}
+	
+	function _get_object_type_context() {
+		global $current_screen;
+		
+		$object_type = '';
+		
+		if( isset( $current_screen->post_type ) ) {
+			$object_type = $current_screen->post_type;
+		} elseif( isset( $current_screen->base ) ) {
+			foreach( $this->_builtin_object_types as $builtin_type ) {
+				if( strpos( $current_screen->base, $builtin_type ) !== false ) {
+					$object_type = $builtin_type;
+					break;
+				}
+			}
+		}
+		
+		return $object_type; 
 	}
 	
 	function _get_display_callback( $field ) {
