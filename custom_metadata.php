@@ -35,7 +35,7 @@ if( CUSTOM_METADATA_MANAGER_DEBUG ) require_once( 'custom_metadata_examples.php'
 TODO:
 - Clean up user fields display
 - Clean up fields display
-- Field types (multi-select, multi-checkboxes)
+- Additional Field types (multi-select, multi-checkboxes, richtext)
 - Refactor field types code
 - Group description field
 
@@ -65,10 +65,10 @@ class custom_metadata_manager {
 	var $_builtin_object_types = array( 'post', 'page', 'user', 'comment' );
 	// Column filter names
 	var $_column_types = array( 'posts', 'pages', 'users', 'comments' );
-	var $_field_types = array( 'text', 'checkbox', 'radio', 'select' );
+	var $_field_types = array( 'text', 'textarea', 'checkbox', 'radio', 'select' );
 	// Object types whose columns are generated through apply_filters instead of do_action
-	var $_column_filter_object_types = array( 'user' );
-
+	var $_column_filter_object_types = array( 'user' ); // taxonomies also apply
+	
 	function __construct( ) {
 		// We need to run these as late as possible!
 		add_action( 'init', array( &$this, 'init' ), 1000, 0 );
@@ -83,6 +83,7 @@ class custom_metadata_manager {
 		global $pagenow;
 		
 		// Hook into load to initialize custom columns
+		// TODO: Should probably only call this on the Manage pages
 		add_action( 'load-' . $pagenow, array( &$this, 'init_columns' ) );
 		
 		// Handle actions related to posts
@@ -97,7 +98,8 @@ class custom_metadata_manager {
 		add_action( 'personal_options_update', array( &$this, 'save_user_metadata' ) );
 		
 		// Hook into admin_notices to show errors
-		add_action( 'admin_notices', array( &$this, '_display_registration_errors' ) );
+		if( current_user_can( 'manage_options' ) )
+			add_action( 'admin_notices', array( &$this, '_display_registration_errors' ) );
 	}
 	
 	function init_object_types() {
@@ -707,10 +709,20 @@ class custom_metadata_manager {
 		<?php
 	}
 	
+	function _display_textarea_field( $field_slug, $field, $object_type, $object_id, $value ) {
+		?>
+		<div class="custom-metadata-field">
+			<label for="<?php echo $field_slug; ?>"><?php echo $field->label; ?></label>
+			<textarea id="<?php echo $field_slug; ?>" name="<?php echo $field_slug; ?>"><?php echo $value; // TODO: Escape this? ?></textarea>
+			<?php $this->_display_field_description( $field_slug, $field, $object_type, $object_id, $value ); ?>
+		</div>
+		<?php
+	}
+	
 	function _display_checkbox_field( $field_slug, $field, $object_type, $object_id, $value ) {
 		$checked = $value ? ' checked="checked"' : '';
 		?>
-		<div>
+		<div class="custom-metadata-field">
 			<label for="<?php echo $field_slug; ?>" class="selectit">
 				<input type="checkbox" id="<?php echo $field_slug; ?>" name="<?php echo $field_slug; ?>" <?php echo $checked; ?> />
 				<?php echo $field->label; ?>
@@ -722,7 +734,7 @@ class custom_metadata_manager {
 	
 	function _display_radio_field( $field_slug, $field, $object_type, $object_id, $value ) {
 		?>
-		<div>
+		<div class="custom-metadata-field">
 			<label><?php echo $field->label; ?></label>
 			<?php $this->_display_field_description( $field_slug, $field, $object_type, $object_id, $value ); ?>
 			
@@ -742,7 +754,7 @@ class custom_metadata_manager {
 	
 	function _display_select_field( $field_slug, $field, $object_type, $object_id, $value ) {
 		?>
-		<div>
+		<div class="custom-metadata-field">
 			<label for="<?php echo $field_slug; ?>">
 				<?php echo $field->label; ?>
 			</label>

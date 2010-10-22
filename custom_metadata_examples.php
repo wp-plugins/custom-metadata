@@ -75,6 +75,11 @@ function init_my_custom_fields() {
 			echo sprintf( 'The value of field "%s" is %s. <br /><a href="http://icanhascheezburger.files.wordpress.com/2010/10/04dc84b6-3dde-45db-88ef-f7c242731ce3.jpg">Here\'s a LOLCat</a>', $field_slug, $value ? $value : 'not set' );
 		}
 		
+		x_add_metadata_field('x_fieldTextarea1', 'post', array(
+			'group' => 'x_metaBox1'
+			, 'field_type' => 'textarea'
+		));
+		
 		x_add_metadata_field('x_fieldCheckbox1', 'post', array(
 			'group' => 'x_metaBox1'
 			, 'field_type' => 'checkbox'
