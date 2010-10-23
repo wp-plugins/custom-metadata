@@ -27,7 +27,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 */
 define( 'CUSTOM_METADATA_MANAGER_DEBUG', WP_DEBUG );
-define( 'CUSTOM_METADATA_MANAGER_VERSION', 0.1 );
+define( 'CUSTOM_METADATA_MANAGER_VERSION', 0.2 );
+define( 'CUSTOM_METADATA_MANAGER_URL' , plugins_url(plugin_basename(dirname(__FILE__)).'/') );
 
 if( CUSTOM_METADATA_MANAGER_DEBUG ) require_once( 'custom_metadata_examples.php' );
 
@@ -103,6 +104,9 @@ class custom_metadata_manager {
 	function init_metadata() {
 		$object_type = $this->_get_object_type_context();
 		
+		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts' ) );
+		add_action( 'admin_print_styles', array( &$this, 'enqueue_styles' ) );
+		
 		$this->init_columns();
 		
 		// Handle actions related to users
@@ -155,6 +159,14 @@ class custom_metadata_manager {
 		else
 			add_filter( "manage_{$column_content_name}_custom_column", $custom_column_content_function, 10, 3 );
 		
+	}
+	
+	function enqueue_scripts() {
+		wp_enqueue_script( 'custom-metadata-manager-js', apply_filters( 'custom-metadata-manager-default-js', CUSTOM_METADATA_MANAGER_URL .'js/custom-metadata-manager.js' ), array( 'jquery' ), CUSTOM_METADATA_MANAGER_VERSION, true ); 
+	}
+	
+	function enqueue_styles() {
+		wp_enqueue_style( 'custom-metadata-manager-css', apply_filters( 'custom-metadata-manager-default-css', CUSTOM_METADATA_MANAGER_URL .'css/custom-metadata-manager.css' ), array(), CUSTOM_METADATA_MANAGER_VERSION );
 	}
 	
 	function add_metadata_column_headers( $columns ) {
@@ -395,7 +407,7 @@ class custom_metadata_manager {
 		?>
 		<h3><?php echo $group->label; ?></h3>
 			
-		<table class="form-table">
+		<table class="form-table user-metadata-group">
 			<?php foreach( $fields as $field_slug => $field ) : ?>
 				<tr valign="top">
 					<td scope="row">

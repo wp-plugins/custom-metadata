@@ -202,6 +202,7 @@ function init_my_custom_fields() {
 		
 		x_add_metadata_field('x_userField1', 'user', array(
 			'display_column' => true
+			, 'description' => 'This is a field for a user. Enter information in here!'
 		));
 		
 		x_add_metadata_field('x_userCheckboxField1', 'user', array(

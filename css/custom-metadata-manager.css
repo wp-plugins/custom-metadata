@@ -1,0 +1,48 @@
+.custom-metadata-field {
+	margin-bottom: 7px;
+}
+	.custom-metadata-field label {
+		display: block;
+		font-size: 13px;
+		line-height: 18px;
+	}
+	.custom-metadata-field .description {
+		display: block;
+		font-size: 11px;
+		margin-top: 3px; 
+	}
+	.custom-metadata-field input[type=text],
+	.custom-metadata-field input[type=url],
+	.custom-metadata-field input[type=password],
+	.custom-metadata-field input[type=email] {
+		width: 99%;
+	}
+	.custom-metadata-field textarea {
+		width: 99%;
+		height: 4em;
+	}
+
+.user-metadata-group {
+}
+	.user-metadata-group .custom-metadata-field label {
+		color: #222;
+		display: block;
+		text-align: left;
+		vertical-align: top;
+		width: 200px;
+		font-size: 13px;
+		line-height: 24px;
+		float: left;
+	}
+	.user-metadata-group .custom-metadata-field input[type=text],
+	.user-metadata-group .custom-metadata-field input[type=url],
+	.user-metadata-group .custom-metadata-field input[type=password],
+	.user-metadata-group .custom-metadata-field input[type=email] {
+		width: 25em;
+	}
+	.user-metadata-group .custom-metadata-field textarea {
+		width: 25em;
+	}
+	.user-metadata-group .custom-metadata-field .description {
+		margin-left: 200px;
+	}
