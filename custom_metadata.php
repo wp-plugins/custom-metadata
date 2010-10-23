@@ -34,8 +34,6 @@ if( CUSTOM_METADATA_MANAGER_DEBUG ) require_once( 'custom_metadata_examples.php'
 
 /*
 TODO:
-- Clean up user fields display
-- Clean up fields display
 - Additional Field types (multi-select, multi-checkboxes, richtext)
 - Refactor field types code
 - Group description field
@@ -162,7 +160,7 @@ class custom_metadata_manager {
 	}
 	
 	function enqueue_scripts() {
-		wp_enqueue_script( 'custom-metadata-manager-js', apply_filters( 'custom-metadata-manager-default-js', CUSTOM_METADATA_MANAGER_URL .'js/custom-metadata-manager.js' ), array( 'jquery' ), CUSTOM_METADATA_MANAGER_VERSION, true ); 
+		//wp_enqueue_script( 'custom-metadata-manager-js', apply_filters( 'custom-metadata-manager-default-js', CUSTOM_METADATA_MANAGER_URL .'js/custom-metadata-manager.js' ), array( 'jquery' ), CUSTOM_METADATA_MANAGER_VERSION, true ); 
 	}
 	
 	function enqueue_styles() {

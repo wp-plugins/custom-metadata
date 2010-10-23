@@ -4,7 +4,7 @@ Donate link: http://digitalize.ca/donate
 Tags: custom metadata, custom metadata manager metadata, postmeta, post meta, user meta, custom post types, custom fields
 Requires at least: 3.0
 Tested up to: 3.0.1
-Stable tag: 0.1
+Stable tag: 0.2
 
 An easy way to add custom fields to your object types (post, pages, custom post types, users)
 
@@ -55,6 +55,7 @@ I'm being good and ["namespacing" my public functions](http://andrewnacin.com/20
 = 0.2 =
 * Added a textarea field type
 * Added support for comments (you can now specify comments as an object type)
+* Added basic styling for fields so that they look nice
 
 = 0.1 =
 * Initial release
