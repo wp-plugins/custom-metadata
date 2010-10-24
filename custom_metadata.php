@@ -144,7 +144,7 @@ class custom_metadata_manager {
 		}
 
 		// Hook into Column Headers
-		add_action( "manage_{$column_header_name}_columns", array( &$this, 'add_metadata_column_headers' ) );
+		add_filter( "manage_{$column_header_name}_columns", array( &$this, 'add_metadata_column_headers' ) );
 		
 		// User and Posts have different functions
 		$custom_column_content_function = array( &$this, "add_{$object_type}_metadata_column_content" ); 
