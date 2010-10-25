@@ -86,6 +86,10 @@ function my_theme_ainit_custom_fields() {
 
 You can get the data as you normally would using the `get_metadata` function. Custom Metadata manager stores all data using the WordPress metadata APIs using the slug name you provide. That way, even if you decide to deactivate this wonderful plugin, your data is safe and accessible.
 
+Example:
+`
+$value = get_metadata( 'post', get_the_ID(), 'featured', true ); // Returns post metadata value for the field 'featured'
+`
 
 = Adding Metadata Groups =
 
@@ -102,7 +106,7 @@ x_add_metadata_group( $slug, $object_types, $args );
 * `$object_types` (string|array) The object types to which this field should be added. Supported: post, page, any custom post type, user.
 
 
-**Overrides**
+**Options and Overrides**
 `
 $args = array(
 	'label' => $group_slug // Label for the group
@@ -124,7 +128,7 @@ $args = array(
 * `$object_types` (string|array) The object types to which this field should be added. Supported: post, page, any custom post type, user.
 
 
-**Overrides**
+**Options and Overrides**
 `
 $args = array( 
 	'group' => '' // The slug of group the field should be added to. This needs to be registered with x_add_metadata_group first.
