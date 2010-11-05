@@ -131,26 +131,30 @@ function init_my_custom_fields() {
 		function fieldCustomList1_display( $field_slug, $field, $object_type, $object_id, $value ) {
 			$value = (array)$value;
 			$field_class = sprintf( 'field-%s', $field_slug );
+			$count = 0;
 			?>
 			<p>This is an example field rendered with a custom display_callback. All done with about 40 lines of code!</p>
 			
 			<?php if( ! empty( $value ) ) : ?>
 				<?php foreach( $value as $v ) : ?>
-					<div class="my-list-item">
+					<div class="f1_my-list-item">
 						<input type="text" name="<?php echo $field_slug; ?>[]" value="<?php echo esc_attr( $v ); ?>" />
-						<a href="#" class="btn-del-list-item" style="color:red;">Delete</a>
+						<?php if( $count > 0 ) : ?>
+							<a href="#" class="f1_btn-del-list-item hide-if-no-js" style="color:red;">Delete</a>
+						<?php endif; ?>
 					</div>
+					<?php $count++; ?>
 				<?php endforeach; ?>
 			<?php else : ?>
 				<input type="text" name="<?php $field_slug; ?>[]" value="" />
 			<?php endif; ?>
-			<p><a href="#" class="btn-add-list-item">+ Add New</a></p>
+			<p><a href="#" class="f1_btn-add-list-item hide-if-no-js">+ Add New</a></p>
 			
 			<script>
 			;(function($) {
-				$('.btn-add-list-item').click(function(e) {
+				$('.f1_btn-add-list-item').click(function(e) {
 					e.preventDefault();
-					var $last = $('.my-list-item:last');
+					var $last = $('.f1_my-list-item:last');
 					var $clone = $last.clone();
 					
 					$clone
@@ -159,13 +163,92 @@ function init_my_custom_fields() {
 							.val('')
 						;
 				});
-				$('.btn-del-list-item').live('click', function(e) {
+				$('.f1_btn-del-list-item').live('click', function(e) {
 					e.preventDefault();
 					$(this).parent().remove();
 				});
 			})(jQuery);
 			</script>
 			<?php
+		}
+		
+		x_add_metadata_field('x_fieldCustomList2[]', array( 'post' ), array(
+			'label' => 'Post Action Items (With Links!)'
+			, 'display_callback' => 'fieldCustomList2_display'
+			, 'sanitize_callback' => 'fieldCustomList2_sanitize'
+		));
+		
+		function fieldCustomList2_display( $field_slug, $field, $object_type, $object_id, $value ) {
+			$value = (array) $value;
+			$field_class = sprintf( 'field-%s', $field_slug );
+			$count = 0;
+			?>
+			<?php if( ! empty( $value ) ) : ?>
+				<?php foreach( $value as $v ) : ?>
+					<?php
+					$text = isset( $v['text'] ) ? $v['text'] : '';
+					$url = isset( $v['url'] ) ? $v['url'] : '';
+					?>
+					<div class="f2_my-list-item">
+						<label>Text</label>
+						<input type="text" name="<?php echo $field_slug; ?>_text[]" value="<?php echo esc_attr( $text ); ?>" />
+						
+						<label>URL</label>
+						<input type="text" name="<?php echo $field_slug; ?>_url[]" value="<?php echo esc_attr( $url ); ?>" />
+						
+						<?php if( $count > 0 ) : ?>
+							<a href="#" class="f2_btn-del-list-item hide-if-no-js" style="color:red;">Delete</a>
+						<?php endif; ?>
+						<?php $count++; ?>
+					</div>
+				<?php endforeach; ?>
+			<?php else : ?>
+				<input type="text" name="<?php $field_slug; ?>[]" value="" />
+			<?php endif; ?>
+			<p><a href="#" class="f2_btn-add-list-item hide-if-no-js">+ Add New</a></p>
+			
+			<script>
+			;(function($) {
+				$('.f2_btn-add-list-item').click(function(e) {
+					e.preventDefault();
+					var $last = $('.f2_my-list-item:last');
+					var $clone = $last.clone();
+					
+					$clone
+						.insertAfter($last)
+						.find(':input')
+							.val('')
+						;
+				});
+				$('.f2_btn-del-list-item').live('click', function(e) {
+					e.preventDefault();
+					$(this).parent().remove();
+				});
+			})(jQuery);
+			</script>
+			<?php
+		}
+		
+		function fieldCustomList2_sanitize( $field_slug, $field, $object_type, $object_id, $value ) {
+			$values = array();
+			$text_key = $field_slug . '_text';
+			$url_key = $field_slug . '_url';
+			
+			if( isset( $_POST[$text_key] ) ) {
+				$count = 0;
+				foreach( (array) $_POST[$text_key] as $text ) {
+					$url = isset( $_POST[$url_key][$count] ) ? $_POST[$url_key][$count] : '';
+					if( $text || $url ) {
+						array_push( $values, array(
+							'text' => $text
+							, 'url' => $url
+						) );
+					}
+					$count++;
+				}
+			}
+			
+			return $values;
 		}
 		
 		x_add_metadata_field( 'x_search-engine', 'post', array(

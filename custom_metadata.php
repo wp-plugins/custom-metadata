@@ -708,6 +708,7 @@ class custom_metadata_manager {
 		$field_slug = sanitize_key( $field_slug );
 		
 		// TODO: 5th param
+		// TODO: Delete if value is empty?
 		update_metadata( $object_type, $object_id, $field_slug, $value );
 		
 	}
