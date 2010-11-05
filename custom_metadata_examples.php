@@ -122,7 +122,7 @@ function init_my_custom_fields() {
 			<?php
 		}
 		
-		x_add_metadata_field('x_fieldCustomList1[]', array( 'post', 'user' ), array(
+		x_add_metadata_field('x_fieldCustomList1', array( 'post', 'user' ), array(
 			'label' => 'Post Action Items'
 			, 'display_callback' => 'fieldCustomList1_display'
 			
@@ -172,7 +172,7 @@ function init_my_custom_fields() {
 			<?php
 		}
 		
-		x_add_metadata_field('x_fieldCustomList2[]', array( 'post' ), array(
+		x_add_metadata_field('x_fieldCustomList2', array( 'post' ), array(
 			'label' => 'Post Action Items (With Links!)'
 			, 'display_callback' => 'fieldCustomList2_display'
 			, 'sanitize_callback' => 'fieldCustomList2_sanitize'
