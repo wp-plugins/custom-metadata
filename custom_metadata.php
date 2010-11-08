@@ -35,7 +35,7 @@ if( CUSTOM_METADATA_MANAGER_DEBUG ) require_once( 'custom_metadata_examples.php'
 /*
 TODO:
 - Additional Field types (multi-select, multi-checkboxes, richtext)
-- Refactor field types code
+- Refactor field types code (add a form helper?)
 - Group description field
 
 - include / exclude specific ids
@@ -346,28 +346,36 @@ class custom_metadata_manager {
 	}
 	
 	function add_post_metadata_groups() {
+		global $post, $comment;
 		
-		$post_type = $this->_get_object_type_context();
+		$object_id = 0;
 		
-		$groups = $this->get_groups_in_object_type( $post_type );
+		if( isset( $post ) ) {
+			$object_id = $post->ID;
+		} elseif( isset( $comment ) ) {
+			$object_id = $comment->comment_ID;
+		}
+		$object_type = $this->_get_object_type_context();
 		
-		if( !empty( $groups ) ) {
+		$groups = $this->get_groups_in_object_type( $object_type );
+		
+		if( $object_id && !empty( $groups ) ) {
 			foreach( $groups as $group_slug => $group ) {
-				$this->add_post_metadata_group( $group_slug, $group, $post_type );
+				$this->add_post_metadata_group( $group_slug, $group, $object_type, $object_id );
 			}
 		}
 	}
 	
-	function add_post_metadata_group( $group_slug, $group, $post_type ) {
+	function add_post_metadata_group( $group_slug, $group, $object_type, $object_id ) {
 		
-		$fields = $this->get_fields_in_group( $group_slug, $post_type );
+		$fields = $this->get_fields_in_group( $group_slug, $object_type );
 		
-		if( ! empty( $fields ) )
+		if( ! empty( $fields ) && $this->is_thing_added_to_object( $group_slug, $group, $object_type, $object_id ) )
 			add_meta_box( 
 				$group_slug,
 				$group->label,
 				array( &$this, '_display_post_metadata_box' ),
-				$post_type,
+				$object_type,
 				$group->context,
 				$group->priority,
 				array(
@@ -388,12 +396,12 @@ class custom_metadata_manager {
 		
 		if( !empty( $groups ) ) {
 			foreach( $groups as $group_slug => $group ) {
-				$this->add_user_metadata_group( $group_slug, $group, $object_type );
+				$this->add_user_metadata_group( $group_slug, $group, $object_type, $user_id );
 			}
 		}
 	}
 	
-	function add_user_metadata_group( $group_slug, $group, $object_type ) {
+	function add_user_metadata_group( $group_slug, $group, $object_type, $user_id ) {
 		$fields = $this->get_fields_in_group( $group_slug, $object_type );
 		
 		if( ! empty( $fields ) )
@@ -598,6 +606,56 @@ class custom_metadata_manager {
 	}
 	function _push_field( $field_slug, $field, $group_slug, $object_type ) {
 		$this->metadata[$object_type][$group_slug]->fields[$field_slug] = $field;
+	}
+	
+	function is_thing_added_to_object( $thing_slug, $thing, $object_type, $object_id, $object_slug = '' ) {
+		
+		if( isset( $thing->exclude ) ) {
+			return ! $this->does_id_array_match_object( $thing->exclude, $object_type, $object_id, $object_slug );
+		}
+		
+		if( isset( $thing->include ) ) {
+			return $this->does_id_array_match_object( $thing->include, $object_type,  $object_id, $object_slug );
+		}
+		
+		return true;
+	}
+	
+	function does_id_array_match_object( $id_array, $object_type,  $object_id, $object_slug = '' ) {
+		if( is_array( $id_array ) ) {
+			if( isset( $id_array[$object_type] ) ) {
+				if( is_array( $id_array[$object_type] ) ) {
+					// array( 'user' => array( 123, 'postname' ) )
+					return $this->does_id_array_match_object( $id_array[$object_type], $object_type, $object_id, $object_slug );
+				} else {
+					// array( 'post' => 123 )
+					return $this->does_id_match_object( $id_array[$object_type], $object_id, $object_slug );
+				}
+			} else {
+				// array( 123, 456, 'postname' )
+				$match = false;
+				foreach( $ids as $id ) {
+					if( $this->does_id_match_object( $id_array, $object_id, $object_slug ) ) {
+						$match = true;
+						break;
+					}
+				}
+				return $match;
+			}
+		} else {
+			// 123 || 'postname' || 'username' || 'comment-name'(?)
+			return $this->does_id_match_object( $id_array, $object_id, $object_slug );
+		}
+	}
+	
+	function does_id_match_object( $id, $object_id, $object_slug = '' ) {
+		if( is_int( $id ) ) {
+			// 123
+			return $id == $object_id;
+		} else {
+			// 'postname' || 'username' || 'comment-name' ??
+			return $id == $object_slug;
+		}
 	}
 	
 	function is_restricted_field( $field_slug, $object_type ) {

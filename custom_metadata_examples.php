@@ -52,6 +52,7 @@ function init_my_custom_fields() {
 	if( function_exists( 'x_add_metadata_group' ) && function_exists( 'x_add_metadata_field' ) ) {
 		x_add_metadata_group( 'x_metaBox1', 'post', $args = array(
 			'label' => 'Group with Multiple Fields'
+			, 'include' => 2476
 		) );
 		
 		x_add_metadata_group( 'x_metaBox2', array( 'post', 'user' ), $args = array(
