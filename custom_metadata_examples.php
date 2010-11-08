@@ -57,6 +57,7 @@ function init_my_custom_fields() {
 		
 		x_add_metadata_group( 'x_metaBox2', array( 'post', 'user' ), $args = array(
 			'label' => 'Group for Post and User'
+			, 'exclude' => array( 'user' => array( 67, 35 ) )
 		) );
 		
 		x_add_metadata_field('x_fieldName1', 'post', array(
@@ -102,6 +103,10 @@ function init_my_custom_fields() {
 				'option1' => 'Option #1'
 				, 'option2' => 'Option #2'
 			)
+		));
+		
+		x_add_metadata_field('x_fieldName2', array( 'post', 'user' ), array(
+			'group' => 'x_metaBox2'
 		));
 		
 		x_add_metadata_field('x_fieldName3', 'post', array(
@@ -328,5 +333,18 @@ function init_my_custom_fields() {
 			'label' => 'Field for Comment'
 			, 'display_column' => true
 		));
+		
+		x_add_metadata_field('x_fieldNameExcluded1', 'post', array(
+			'description' => 'This field is excluded from Post ID#2476'
+			, 'label' => 'Excluded Field'
+			, 'exclude' => 2476
+		));
+		
+		x_add_metadata_field('x_fieldNameIncluded1', 'post', array(
+			'description' => 'This field is only included on Post ID#2476'
+			, 'label' => 'Included Field'
+			, 'include' => 2476
+		));
+		
 	}
 }

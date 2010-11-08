@@ -370,7 +370,7 @@ class custom_metadata_manager {
 		
 		$fields = $this->get_fields_in_group( $group_slug, $object_type );
 		
-		if( ! empty( $fields ) && $this->is_thing_added_to_object( $group_slug, $group, $object_type, $object_id ) )
+		if( ! empty( $fields ) && $this->is_thing_added_to_object( $group_slug, $group, $object_type, $object_id ) ) {
 			add_meta_box( 
 				$group_slug,
 				$group->label,
@@ -383,6 +383,7 @@ class custom_metadata_manager {
 					, 'fields' => $fields
 				)
 			);
+		}
 	}
 	
 	function add_user_metadata_groups() {
@@ -404,7 +405,7 @@ class custom_metadata_manager {
 	function add_user_metadata_group( $group_slug, $group, $object_type, $user_id ) {
 		$fields = $this->get_fields_in_group( $group_slug, $object_type );
 		
-		if( ! empty( $fields ) )
+		if( ! empty( $fields ) && $this->is_thing_added_to_object( $group_slug, $group, $object_type, $user_id ) )
 			$this->_display_user_metadata_box( $group_slug, $group, $object_type, $fields );
 	}
 	
@@ -415,11 +416,13 @@ class custom_metadata_manager {
 			
 		<table class="form-table user-metadata-group">
 			<?php foreach( $fields as $field_slug => $field ) : ?>
-				<tr valign="top">
-					<td scope="row">
-						<?php $this->_display_metadata_field( $field_slug, $field, $object_type, $user_id ); ?>
-					</td>
-				</tr>
+				<?php if( $this->is_thing_added_to_object( $field_slug, $field, $object_type, $user_id ) ) : ?>
+					<tr valign="top">
+						<td scope="row">
+							<?php $this->_display_metadata_field( $field_slug, $field, $object_type, $user_id ); ?>
+						</td>
+					</tr>
+				<?php endif; ?>
 			<?php endforeach; ?>
 		</table>
 		<?php
@@ -445,7 +448,9 @@ class custom_metadata_manager {
 		}
 		
 		foreach( $fields as $field_slug => $field ) {
-			$this->_display_metadata_field( $field_slug, $field, $object_type, $object_id );
+			if( $this->is_thing_added_to_object( $field_slug, $field, $object_type, $object_id ) ) {
+				$this->_display_metadata_field( $field_slug, $field, $object_type, $object_id );
+			}
 		}
 		
 		// Each group gets its own nonce
@@ -621,7 +626,7 @@ class custom_metadata_manager {
 		return true;
 	}
 	
-	function does_id_array_match_object( $id_array, $object_type,  $object_id, $object_slug = '' ) {
+	function does_id_array_match_object( $id_array, $object_type, $object_id, $object_slug = '' ) {
 		if( is_array( $id_array ) ) {
 			if( isset( $id_array[$object_type] ) ) {
 				if( is_array( $id_array[$object_type] ) ) {
@@ -634,8 +639,8 @@ class custom_metadata_manager {
 			} else {
 				// array( 123, 456, 'postname' )
 				$match = false;
-				foreach( $ids as $id ) {
-					if( $this->does_id_match_object( $id_array, $object_id, $object_slug ) ) {
+				foreach( $id_array as $id ) {
+					if( $this->does_id_match_object( $id, $object_id, $object_slug ) ) {
 						$match = true;
 						break;
 					}
