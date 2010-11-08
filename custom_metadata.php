@@ -69,7 +69,7 @@ class custom_metadata_manager {
 	// Object types whose columns are generated through apply_filters instead of do_action
 	var $_column_filter_object_types = array( 'user' );
 	// Whitelisted pages that get stylesheets and scripts
-	var $_pages_whitelist = array( 'edit.php', 'post.php', 'users.php', 'profile.php', 'user-edit.php', 'edit-comments.php', 'comment.php' );
+	var $_pages_whitelist = array( 'edit.php', 'post.php', 'post-new.php', 'users.php', 'profile.php', 'user-edit.php', 'edit-comments.php', 'comment.php' );
 	
 	function __construct( ) {
 		// We need to run these as late as possible!
