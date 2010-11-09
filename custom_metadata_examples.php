@@ -141,7 +141,7 @@ function init_my_custom_fields() {
 			?>
 			<p>This is an example field rendered with a custom display_callback. All done with about 40 lines of code!</p>
 			
-			<?php if( ! empty( $value ) ) : ?>
+			<?php if( empty( $value ) ) $value = array(); ?>
 				<?php foreach( $value as $v ) : ?>
 					<div class="f1_my-list-item">
 						<input type="text" name="<?php echo $field_slug; ?>[]" value="<?php echo esc_attr( $v ); ?>" />
@@ -151,9 +151,6 @@ function init_my_custom_fields() {
 					</div>
 					<?php $count++; ?>
 				<?php endforeach; ?>
-			<?php else : ?>
-				<input type="text" name="<?php $field_slug; ?>[]" value="" />
-			<?php endif; ?>
 			<p><a href="#" class="f1_btn-add-list-item hide-if-no-js">+ Add New</a></p>
 			
 			<script>
@@ -189,28 +186,29 @@ function init_my_custom_fields() {
 			$field_class = sprintf( 'field-%s', $field_slug );
 			$count = 0;
 			?>
-			<?php if( ! empty( $value ) ) : ?>
-				<?php foreach( $value as $v ) : ?>
-					<?php
-					$text = isset( $v['text'] ) ? $v['text'] : '';
-					$url = isset( $v['url'] ) ? $v['url'] : '';
-					?>
-					<div class="f2_my-list-item">
-						<label>Text</label>
-						<input type="text" name="<?php echo $field_slug; ?>_text[]" value="<?php echo esc_attr( $text ); ?>" />
-						
-						<label>URL</label>
-						<input type="text" name="<?php echo $field_slug; ?>_url[]" value="<?php echo esc_attr( $url ); ?>" />
-						
-						<?php if( $count > 0 ) : ?>
-							<a href="#" class="f2_btn-del-list-item hide-if-no-js" style="color:red;">Delete</a>
-						<?php endif; ?>
-						<?php $count++; ?>
-					</div>
-				<?php endforeach; ?>
-			<?php else : ?>
-				<input type="text" name="<?php $field_slug; ?>[]" value="" />
-			<?php endif; ?>
+			<p>This is an example field rendered with a custom display_callback (renders multiple fields and js) and a custom sanitize_callback (aggregates the submitted data into a single array).</p>
+			
+			<?php if( empty( $value ) ) array_push( $value, array() ); ?>
+				
+			<?php foreach( $value as $v ) : ?>
+				<?php
+				$text = isset( $v['text'] ) ? $v['text'] : '';
+				$url = isset( $v['url'] ) ? $v['url'] : '';
+				?>
+				<div class="f2_my-list-item">
+					<label>Text</label>
+					<input type="text" name="<?php echo $field_slug; ?>_text[]" value="<?php echo esc_attr( $text ); ?>" />
+					
+					<label>URL</label>
+					<input type="text" name="<?php echo $field_slug; ?>_url[]" value="<?php echo esc_attr( $url ); ?>" />
+					
+					<?php if( $count > 0 ) : ?>
+						<a href="#" class="f2_btn-del-list-item hide-if-no-js" style="color:red;">Delete</a>
+					<?php endif; ?>
+					<?php $count++; ?>
+				</div>
+			<?php endforeach; ?>
+			
 			<p><a href="#" class="f2_btn-add-list-item hide-if-no-js">+ Add New</a></p>
 			
 			<script>
