@@ -52,6 +52,11 @@ I'm being good and ["namespacing" my public functions](http://andrewnacin.com/20
 
 == Changelog ==
 
+= 0.3 =
+* Can now limit or exclude fields or groups from specific ids
+* Added updated screenshots and new code samples!
+* Bug fix: the custom display examples weren't working well
+
 = 0.2 =
 * Added a textarea field type
 * Added support for comments (you can now specify comments as an object type)
