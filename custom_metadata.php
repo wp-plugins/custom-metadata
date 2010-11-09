@@ -40,9 +40,8 @@ TODO:
 
 - include / exclude specific ids
 -- Example: I only want a metabox and specifc fields to show up only on the 'About' and 'Contact' pages
--- Should be able to specify roles for users?
 
-- Group caps?
+- Limit group based on caps?
 - Limit view of custom column based on caps?
 - Limit view and save to specific caps based on object type?
 -- default for posts: edit_posts
@@ -52,7 +51,7 @@ TODO:
 - custom styles + scripts for fields
 - validation (pass in array of validation types, or string that references function)
 - quick edit
-- Links support
+- Links support (?)
 
 */
 

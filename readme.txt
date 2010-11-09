@@ -103,7 +103,7 @@ x_add_metadata_group( $slug, $object_types, $args );
 **Parameters**
 
 * `$slug` (string) The key under which the metadata will be stored.
-* `$object_types` (string|array) The object types to which this field should be added. Supported: post, page, any custom post type, user.
+* `$object_types` (string|array) The object types to which this field should be added. Supported: post, page, any custom post type, user, comment.
 
 
 **Options and Overrides**
@@ -125,7 +125,7 @@ $args = array(
 **Parameters**
 
 * `$slug` (string) The key under which the metadata will be stored. For post_types, prefix the slug with an underscore (e.g. `_hidden`) to hide it from the the Custom Fields box.
-* `$object_types` (string|array) The object types to which this field should be added. Supported: post, page, any custom post type, user.
+* `$object_types` (string|array) The object types to which this field should be added. Supported: post, page, any custom post type, user, comment.
 
 
 **Options and Overrides**
