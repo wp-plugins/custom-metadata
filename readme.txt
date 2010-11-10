@@ -118,6 +118,8 @@ $args = array(
 	, 'context' => 'normal' // (post only)
 	, 'priority' => 'default' // (post only)
 	, 'autosave' => false // (post only) Should the group be saved in autosave? NOT IMPLEMENTED YET!
+	, 'exclude' => '' // see below for details
+	, 'include' => '' // see below for details
 );
 `
 
@@ -146,8 +148,47 @@ $args = array(
 	, 'display_column' => false // Add the field to the columns when viewing all posts
 	, 'display_column_callback' => '' // Callback to render output for the custom column
 	, 'required_cap' => '' // The cap required to view and edit the field
+	, 'exclude' => '' // see below for details
+	, 'include' => '' // see below for details
 );
 `
+
+= Include / Exclude =
+
+With v0.3, you can exclude fields and groups from specific object. For example, with the following, field-1 will show up for all posts except post #123:
+
+`
+$args = array( 
+	'exclude' => 123
+);
+x_add_metadata_field( 'field-1', 'post', $args );
+`
+
+Alternatively, you can limit ("include") fields and groups to specific objects. The following will ''only'' show group-1 to post #456:
+
+`
+$args = array( 
+	'include' => 123
+);
+x_add_metadata_group( 'group-1', 'post', $args );
+`
+
+You can pass in an array of IDs:
+
+`
+$args = array( 
+	'include' => array( 123, 456, 789 );
+);
+
+With multiple object types, you can pass in an associative array:
+
+`
+$args = array( 
+	'exclude' => array(
+		'post' => 123
+		, 'user' => array( 123, 456, 789 )
+	)
+);
 
 
 = Examples = 

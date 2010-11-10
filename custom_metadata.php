@@ -38,9 +38,6 @@ TODO:
 - Refactor field types code (add a form helper?)
 - Group description field
 
-- include / exclude specific ids
--- Example: I only want a metabox and specifc fields to show up only on the 'About' and 'Contact' pages
-
 - Limit group based on caps?
 - Limit view of custom column based on caps?
 - Limit view and save to specific caps based on object type?
