@@ -41,6 +41,8 @@ This is also a developer feature, aimed towards site builders. And real develope
 
 (But really, though, the main benefit of this fact comes into play when you're working with multiple environments, i.e. development/local, qa/staging, production. This approach makes it easy to replicate UIs and features without having to worry about database synchronization and other crazy things.)
 
+For another really well-done, really powerful code-based plugin for managing custom fields, check out [Easy Custom Fields](http://wordpress.org/extend/plugins/easy-custom-fields/).
+
 = Why isn't the function just `add_metdata_field`? Do you really need the stupid `x_`? =
 
 I'm being good and ["namespacing" my public functions](http://andrewnacin.com/2010/05/11/in-wordpress-prefix-everything/). You should too.
