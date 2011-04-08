@@ -685,7 +685,7 @@ class custom_metadata_manager {
 	}
 	
 	function _get_object_type_context() {
-		global $current_screen;
+		global $current_screen, $pagenow;
 		
 		$object_type = '';
 		
