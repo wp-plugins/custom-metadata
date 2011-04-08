@@ -515,8 +515,12 @@ class custom_metadata_manager {
 	}
 	
 	function save_metadata_field( $field_slug, $field, $object_type, $object_id ) {
-		$value = $this->_sanitize_field_value( $field_slug, $field, $object_type, $object_id, $_POST[$field_slug] );
-		$this->_save_field_value( $field_slug, $field, $object_type, $object_id, $value );
+		if( isset( $_POST[$field_slug] ) ) {
+			$value = $this->_sanitize_field_value( $field_slug, $field, $object_type, $object_id, $_POST[$field_slug] );
+			$this->_save_field_value( $field_slug, $field, $object_type, $object_id, $value );
+		} else {
+			$this->_delete_field_value( $field_slug, $field, $object_type, $object_id );
+		}
 	}
 	
 	function get_metadata_field_value( $field_slug, $field, $object_type, $object_id ) {
@@ -776,6 +780,15 @@ class custom_metadata_manager {
 		// TODO: Delete if value is empty?
 		update_metadata( $object_type, $object_id, $field_slug, $value );
 		
+	}
+	
+	function _delete_field_value( $field_slug, $field, $object_type, $object_id, $value = false ) {
+		if( ! in_array( $object_type, $this->_non_post_types ) )
+			$object_type = 'post';
+		
+		$field_slug = sanitize_key( $field_slug );
+		
+		delete_metadata( $object_type, $object_id, $field_slug, $value );
 	}
 	
 	function _sanitize_field_value( $field_slug, $field, $object_type, $object_id, $value ) {
