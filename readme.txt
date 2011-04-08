@@ -12,7 +12,7 @@ An easy way to add custom fields to your object types (post, pages, custom post 
 
 An easy way to add custom fields to your object types (post, pages, custom post types, users).
 
-The goal of this plugin is to help you rapidply build familiar, intuitive interfaces for your users in a very WordPress-native way. 
+The goal of this plugin is to help you rapidly build familiar, intuitive interfaces for your users in a very WordPress-native way. 
 
 The custom field panel is nice, but not quite the easiest thing for users to work with. Adding your own metaboxes and fields involves a lot of time and repetitive code that could be better used elsewhere.
 
@@ -38,6 +38,8 @@ Like what you see? Want more field types and features added? [Get in touch](mail
 Because the UI thing has [been](http://wordpress.org/extend/plugins/verve-meta-boxes/) [done](http://wordpress.org/extend/plugins/fresh-page/) [before](http://wordpress.org/extend/plugins/pods/). And this more closely aligns with the existing WordPress approach of registering new types of content (post types, taxonomies, etc.)
 
 This is also a developer feature, aimed towards site builders. And real developers don't need UIs ;)
+
+(But really, though, the main benefit of this fact comes into play when you're working with multiple environments, i.e. development/local, qa/staging, production. This approach makes it easy to replicate UIs and features without having to worry about database synchronization and other crazy things.)
 
 = Why isn't the function just `add_metdata_field`? Do you really need the stupid `x_`? =
 
@@ -191,8 +193,11 @@ $args = array(
 );
 
 
-= Examples = 
-For examples, please see the [custom_metadata_examples.php](http://svn.wp-plugins.org/custom-metadata/trunk/custom_metadata_examples.php) file included with the plugin. Set WP_DEBUG to true to see it in action.
+= Examples =
+ 
+For examples, please see the [custom_metadata_examples.php](http://svn.wp-plugins.org/custom-metadata/trunk/custom_metadata_examples.php) file included with the plugin. Add a constant to your wp-config.php called `CUSTOM_METADATA_MANAGER_DEBUG` with a value of `true` to see it in action:
+
+`define( 'CUSTOM_METADATA_MANAGER_DEBUG', true );`
 
 = TODOs =
 
