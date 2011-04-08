@@ -26,7 +26,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 */
-define( 'CUSTOM_METADATA_MANAGER_DEBUG', WP_DEBUG );
+if( ! defined( 'CUSTOM_METADATA_MANAGER_DEBUG' ) )
+	define( 'CUSTOM_METADATA_MANAGER_DEBUG', false );
 define( 'CUSTOM_METADATA_MANAGER_VERSION', 0.2 );
 define( 'CUSTOM_METADATA_MANAGER_URL' , plugins_url(plugin_basename(dirname(__FILE__)).'/') );
 
