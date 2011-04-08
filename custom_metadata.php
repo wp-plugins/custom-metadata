@@ -689,6 +689,11 @@ class custom_metadata_manager {
 		
 		$object_type = '';
 		
+		// This is a hack!
+		if( $pagenow == 'profile.php' ) {
+			return 'user';
+		}
+		
 		if( isset( $current_screen->post_type ) ) {
 			$object_type = $current_screen->post_type;
 		} elseif( isset( $current_screen->base ) ) {
