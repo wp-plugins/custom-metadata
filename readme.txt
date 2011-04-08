@@ -3,8 +3,8 @@ Contributors: batmoo
 Donate link: http://digitalize.ca/donate
 Tags: custom metadata, custom metadata manager metadata, postmeta, post meta, user meta, custom post types, custom fields
 Requires at least: 3.0
-Tested up to: 3.0.1
-Stable tag: 0.2
+Tested up to: 3.1
+Stable tag: 0.3
 
 An easy way to add custom fields to your object types (post, pages, custom post types, users)
 
@@ -209,8 +209,8 @@ Stuff I have planned for the future:
 
 * Improved styling of rendered fields
 * Ability Pass in attributes for built-in fields (e.g. class, data-*, etc.)
-* Additional field types
-* Limit or exclude groups and fields for specific ids (e.g. show only on post id = 145)
+* Additional field types (multi-select, upload, rich-text, etc.)
+* Limit or exclude groups and fields using a custom callback
 * Autosave support for fields on post types
 * Option to enqueue scripts and styles
 * Client- and server-side validation support

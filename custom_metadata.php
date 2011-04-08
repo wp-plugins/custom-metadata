@@ -4,7 +4,7 @@ Plugin Name: Custom Metadata Manager
 Plugin URI: http://digitalize.ca
 Description: An easy way to add custom fields to your object types (post, pages, custom post types, users)
 Author: Mohammad Jangda
-Version: 0.2
+Version: 0.3
 Author URI: http://digitalize.ca/
 
 Copyright 2010 Mohammad Jangda
@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 if( ! defined( 'CUSTOM_METADATA_MANAGER_DEBUG' ) )
 	define( 'CUSTOM_METADATA_MANAGER_DEBUG', false );
-define( 'CUSTOM_METADATA_MANAGER_VERSION', 0.2 );
+define( 'CUSTOM_METADATA_MANAGER_VERSION', 0.3 );
 define( 'CUSTOM_METADATA_MANAGER_URL' , plugins_url(plugin_basename(dirname(__FILE__)).'/') );
 
 if( CUSTOM_METADATA_MANAGER_DEBUG ) require_once( 'custom_metadata_examples.php' );
