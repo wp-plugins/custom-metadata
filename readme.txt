@@ -58,6 +58,7 @@ I'm being good and ["namespacing" my public functions](http://andrewnacin.com/20
 * Can now limit or exclude fields or groups from specific ids
 * Added updated screenshots and new code samples!
 * Bug fix: the custom display examples weren't working well
+* Bug fis: fields not showing on "Add New" page. Thanks Jan Fabry!
 
 = 0.2 =
 * Added a textarea field type
