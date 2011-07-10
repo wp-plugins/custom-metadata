@@ -3,7 +3,7 @@ Contributors: batmoo
 Donate link: http://digitalize.ca/donate
 Tags: custom metadata, custom metadata manager metadata, postmeta, post meta, user meta, custom post types, custom fields
 Requires at least: 3.0
-Tested up to: 3.1
+Tested up to: 3.2
 Stable tag: 0.3
 
 An easy way to add custom fields to your object types (post, pages, custom post types, users)
