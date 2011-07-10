@@ -145,7 +145,7 @@ $args = array(
 `
 $args = array( 
 	'group' => '' // The slug of group the field should be added to. This needs to be registered with x_add_metadata_group first.
-	, 'field_type' => 'text' // The type of field; possible values: text, checkbox, radio, select
+	, 'field_type' => 'text' // The type of field; possible values: text, textarea, checkbox, radio, select
 	, 'label' => '' // Label for the field
 	, 'description' => '' // Description of the field, displayed below the input
 	, 'values' => array() // Values for select and radio buttons. Associative array
@@ -215,3 +215,4 @@ Stuff I have planned for the future:
 * Option to enqueue scripts and styles
 * Client- and server-side validation support
 * Add groups and fields to Quick Edit
+
