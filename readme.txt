@@ -1,16 +1,16 @@
 === Custom Metadata Manager ===
-Contributors: batmoo
+Contributors: batmoo, jkudish, cvernon, stresslimit
 Donate link: http://digitalize.ca/donate
-Tags: custom metadata, custom metadata manager metadata, postmeta, post meta, user meta, custom post types, custom fields
+Tags: custom metadata, custom metadata manager metadata, postmeta, post meta, user meta, custom post types, custom fields, options, options pages, metabox
 Requires at least: 3.0
-Tested up to: 3.2
-Stable tag: 0.3
+Tested up to: 3.2.1
+Stable tag: 0.4
 
-An easy way to add custom fields to your object types (post, pages, custom post types, users)
+An easy way to add custom fields to your object types (post, pages, custom post types, users) & to generate option pages
 
 == Description ==
 
-An easy way to add custom fields to your object types (post, pages, custom post types, users).
+An easy way to add custom fields to your object types (post, pages, custom post types, users) & to generate option pages.
 
 The goal of this plugin is to help you rapidly build familiar, intuitive interfaces for your users in a very WordPress-native way. 
 
@@ -43,9 +43,9 @@ This is also a developer feature, aimed towards site builders. And real develope
 
 For another really well-done, really powerful code-based plugin for managing custom fields, check out [Easy Custom Fields](http://wordpress.org/extend/plugins/easy-custom-fields/).
 
-= Why isn't the function just `add_metdata_field`? Do you really need the stupid `x_`? =
+= Why isn't the function just `add_metadata_field`? Do you really need the stupid `x_`? =
 
-I'm being good and ["namespacing" my public functions](http://andrewnacin.com/2010/05/11/in-wordpress-prefix-everything/). You should too.
+We're being good and ["namespacing" my public functions](http://andrewnacin.com/2010/05/11/in-wordpress-prefix-everything/). You should too.
 
 == Screenshots ==
 
@@ -55,6 +55,13 @@ I'm being good and ["namespacing" my public functions](http://andrewnacin.com/20
 4. Adding custom columns is also easy. You can go with a default display, or specify your own output callback
 
 == Changelog ==
+
+= 0.4 =
+* Enhanced the code which generates the different field types
+* Added new types: password, upload, wysiwyg, datepicker, taxonomy_select, taxonomy_radio, attachment_list
+* Added field multiplication ability
+* Metadata is now deleted if a value is empty
+* Can now also generate option pages which use a metabox interface
 
 = 0.3 =
 * Can now limit or exclude fields or groups from specific ids
@@ -75,17 +82,17 @@ I'm being good and ["namespacing" my public functions](http://andrewnacin.com/20
 
 = Object Types =
 
-The main idea behind this plugin is to have a single API to work with regardless of the object type. Currently, Custom Metadata Manager works with `user`, `comment` and any built-in or custom post types, e.g. `post`, `page`, etc.
+The main idea behind this plugin is to have a single API to work with regardless of the object type. Currently, Custom Metadata Manager works with `user`, `comment` and any built-in or custom post types, e.g. `post`, `page`, etc. Since version 0.4 of the plugin, option pages are also supported. 
 
 
 = Registering your fields = 
 
-For the sake of performance (and to avoid potential race conditions), always register your custom fields in the `admin_init` hook. This way your front-end doesn't get bogged down with unnecessary processing and you can be sure that your fields will be registered safely. Here's a code sample:
+For the sake of performance (and to avoid potential race conditions), always register your custom fields in the `admin_menu` hook. This way your front-end doesn't get bogged down with unnecessary processing and you can be sure that your fields will be registered safely. Here's a code sample:
 
 `
-add_action( 'admin_init', 'my_theme_init_custom_fields' );
+add_action( 'admin_menu', 'my_theme_init_custom_fields' );
 
-function my_theme_ainit_custom_fields() {
+function my_theme_init_custom_fields() {
 	if( function_exists( 'x_add_metadata_field' ) && function_exists( 'x_add_metadata_group' ) ) {
 		x_add_metadata_field( 'my_field', array( 'user', 'post' ) );
 	}
@@ -95,7 +102,7 @@ function my_theme_ainit_custom_fields() {
 
 = Getting the data = 
 
-You can get the data as you normally would using the `get_metadata` function. Custom Metadata manager stores all data using the WordPress metadata APIs using the slug name you provide. That way, even if you decide to deactivate this wonderful plugin, your data is safe and accessible.
+You can get the data as you normally would using the `get_metadata` function. Custom Metadata manager stores all data using the WordPress metadata APIs using the slug name you provide. That way, even if you decide to deactivate this wonderful plugin, your data is safe and accessible. For options, you can use `get_option`.
 
 Example:
 `
@@ -205,14 +212,13 @@ For examples, please see the [custom_metadata_examples.php](http://svn.wp-plugin
 
 = TODOs =
 
-Stuff I have planned for the future:
+Stuff we have planned for the future:
 
-* Improved styling of rendered fields
 * Ability Pass in attributes for built-in fields (e.g. class, data-*, etc.)
-* Additional field types (multi-select, upload, rich-text, etc.)
+* Additional field types (multi-select, multi-checkbox.)
 * Limit or exclude groups and fields using a custom callback
 * Autosave support for fields on post types
-* Option to enqueue scripts and styles
+* Improve option page behaviour & performance
 * Client- and server-side validation support
 * Add groups and fields to Quick Edit
 

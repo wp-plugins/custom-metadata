@@ -2,12 +2,12 @@
 /*
 Plugin Name: Custom Metadata Manager
 Plugin URI: http://wordpress.org/extend/plugins/custom-metadata/
-Description: An easy way to add custom fields to your object types (post, pages, custom post types, users)
-Author: Mohammad Jangda
-Version: 0.3
+Description: An easy way to add custom fields to your object types (post, pages, custom post types, users) & option pages
+Author: Mohammad Jangda, Joachim Kudish, Colin Vernon
+Version: 0.4
 Author URI: http://digitalize.ca/
 
-Copyright 2010 Mohammad Jangda
+Copyright 2010 Mohammad Jangda, Joachim Kudish, Colin Vernon
 
 GNU General Public License, Free Software Foundation <http://creativecommons.org/licenses/GPL/2.0/>
 
@@ -26,18 +26,18 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 */
-if( ! defined( 'CUSTOM_METADATA_MANAGER_DEBUG' ) )
-	define( 'CUSTOM_METADATA_MANAGER_DEBUG', false );
-define( 'CUSTOM_METADATA_MANAGER_VERSION', 0.3 );
+if( ! defined( 'CUSTOM_METADATA_MANAGER_DEBUG' ) ) define( 'CUSTOM_METADATA_MANAGER_DEBUG', false );
+define( 'CUSTOM_METADATA_MANAGER_VERSION', 0.4 );
 define( 'CUSTOM_METADATA_MANAGER_URL' , plugins_url(plugin_basename(dirname(__FILE__)).'/') );
 
 if( CUSTOM_METADATA_MANAGER_DEBUG ) require_once( 'custom_metadata_examples.php' );
 
 /*
 TODO:
-- Additional Field types (multi-select, multi-checkboxes, richtext)
-- Refactor field types code (add a form helper?)
+- Additional Field types (multi-select, multi-checkboxes)
 - Group description field
+- Make metabox order work on option pages
+- Build in register_setting in a way that works for option pages
 
 - Limit group based on caps?
 - Limit view of custom column based on caps?
@@ -46,49 +46,66 @@ TODO:
 -- default for custom posts: check custom post type object
 -- user: edit_user
 
-- custom styles + scripts for fields
+- wysiwyg allow switch visual/html
 - validation (pass in array of validation types, or string that references function)
 - quick edit
 - Links support (?)
 
 */
 
+if (!class_exists('custom_metadata_manager')) :
+
 class custom_metadata_manager {
 
 	var $errors = array();
 	var $metadata = array();
-	var $_non_post_types = array( 'user', 'comment' ); // TODO: Links go in here too
+	var $_non_post_types = array( 'user', 'comment', 'options' );
 	// Object types that come "built-in" with WordPress
-	var $_builtin_object_types = array( 'post', 'page', 'user', 'comment' ); // TODO: Links
+	var $_builtin_object_types = array( 'post', 'page', 'user', 'comment' );
 	// Column filter names
-	var $_column_types = array( 'posts', 'pages', 'users', 'comments' ); // TODO: Links
-	var $_field_types = array( 'text', 'textarea', 'checkbox', 'radio', 'select' );
+	var $_column_types = array( 'posts', 'pages', 'users', 'comments' );
+	// field types
+	var $_field_types = array( 'text', 'textarea', 'password', 'checkbox', 'radio', 'select', 'upload', 'wysiwyg', 'datepicker', 'taxonomy_select', 'taxonomy_radio', 'attachment_list' ); // TODO: password
+	// field types that are cloneable
+	var $_cloneable_field_types = array( 'text', 'textarea', 'upload', 'wysiwyg');
 	// Object types whose columns are generated through apply_filters instead of do_action
 	var $_column_filter_object_types = array( 'user' );
 	// Whitelisted pages that get stylesheets and scripts
-	var $_pages_whitelist = array( 'edit.php', 'post.php', 'post-new.php', 'users.php', 'profile.php', 'user-edit.php', 'edit-comments.php', 'comment.php' );
+	var $_pages_whitelist = array( 'edit.php', 'post.php', 'post-new.php', 'users.php', 'profile.php', 'user-edit.php', 'edit-comments.php', 'comment.php');
+	
 	
 	function __construct( ) {
 		// We need to run these as late as possible!
 		add_action( 'init', array( &$this, 'init' ), 1000, 0 );
 		add_action( 'admin_init', array( &$this, 'admin_init' ), 1000, 0 );
-	}
 
-	function init( ) {
+		add_action( 'admin_head', array( &$this, 'admin_head' ));	
+	}
+				
+	function init() {
 		$this->init_object_types();
 	}
 	
 	function admin_init() {
-		global $pagenow;
+		global $pagenow; 
 		
 		// Hook into load to initialize custom columns
 		if( in_array( $pagenow, $this->_pages_whitelist ) ) {
 			add_action( 'load-' . $pagenow, array( &$this, 'init_metadata' ) );
 		}
+
+		if ( $_GET['page'] ) {
+			$this->init_metadata(true);
+		}
 		
 		// Hook into admin_notices to show errors
 		if( current_user_can( 'manage_options' ) )
 			add_action( 'admin_notices', array( &$this, '_display_registration_errors' ) );
+			
+	}
+	
+	function admin_head() {
+ 		wp_tiny_mce();
 	}
 	
 	function init_object_types() {
@@ -96,7 +113,7 @@ class custom_metadata_manager {
 			$this->metadata[$object_type] = array();
 	}
 
-	function init_metadata() {
+	function init_metadata( $options = false ) {
 		$object_type = $this->_get_object_type_context();
 		
 		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts' ) );
@@ -107,12 +124,18 @@ class custom_metadata_manager {
 		// Handle actions related to users
 		// TODO: I really don't like hard-coding this...
 		if( $object_type == 'user' ) {
+
 			// Editing another user's profile
 			add_action( 'edit_user_profile', array( &$this, 'add_user_metadata_groups' ) );
 			add_action( 'edit_user_profile_update', array( &$this, 'save_user_metadata' ) );
 			// Allow user-editable fields on "Your Profile"
 			add_action( 'show_user_profile', array( &$this, 'add_user_metadata_groups' ) );
 			add_action( 'personal_options_update', array( &$this, 'save_user_metadata' ) );
+
+		} elseif ($options)	 {
+			
+			$this->add_options_metadata_groups();
+
 		} else {
 			
 			// Hook in to metaboxes
@@ -123,7 +146,7 @@ class custom_metadata_manager {
 			add_action( 'edit_comment', array( &$this, 'save_comment_metadata' ) );
 		}
 	}
-
+	
 	function init_columns() {
 		
 		$object_type = $this->_get_object_type_context();
@@ -157,11 +180,23 @@ class custom_metadata_manager {
 	}
 	
 	function enqueue_scripts() {
-		//wp_enqueue_script( 'custom-metadata-manager-js', apply_filters( 'custom-metadata-manager-default-js', CUSTOM_METADATA_MANAGER_URL .'js/custom-metadata-manager.js' ), array( 'jquery' ), CUSTOM_METADATA_MANAGER_VERSION, true ); 
+		wp_enqueue_script('jquery');
+		wp_enqueue_script('jquery-ui-core');
+		wp_enqueue_script('common');
+		wp_enqueue_script('postbox');
+		wp_enqueue_script('media-upload');
+		wp_enqueue_script('thickbox');
+		wp_enqueue_script('word-count');
+		wp_enqueue_script('post');
+		wp_enqueue_script('editor');
+		wp_enqueue_script('custom-metadata-manager-js', apply_filters( 'custom-metadata-manager-default-js', CUSTOM_METADATA_MANAGER_URL .'js/custom-metadata-manager.js' ), array( 'jquery' ), CUSTOM_METADATA_MANAGER_VERSION, true);
+		wp_enqueue_script('jquery-ui-datepicker', apply_filters('custom-metadata-manager-datepicker-js', CUSTOM_METADATA_MANAGER_URL .'js/jquery-ui-datepicker.min.js'), array('jquery', 'jquery-ui-core'));
 	}
 	
 	function enqueue_styles() {
+		wp_enqueue_style('jquery-custom-ui');
 		wp_enqueue_style( 'custom-metadata-manager-css', apply_filters( 'custom-metadata-manager-default-css', CUSTOM_METADATA_MANAGER_URL .'css/custom-metadata-manager.css' ), array(), CUSTOM_METADATA_MANAGER_VERSION );
+		wp_enqueue_style( 'jquery-ui-css', apply_filters( 'custom-metadata-manager-jquery-ui-css', CUSTOM_METADATA_MANAGER_URL .'css/jquery-ui-smoothness.css' ), array(), CUSTOM_METADATA_MANAGER_VERSION );
 	}
 	
 	function add_metadata_column_headers( $columns ) {
@@ -262,6 +297,55 @@ class custom_metadata_manager {
 		
 		$this->add_group_to_object_type( $group_slug, $group, $object_types );
 	}
+
+	function add_option_page( $page_title, $menu_title, $capability, $options_slug, $icon_url, $position, $submenu, $parent ) {
+
+			if ($submenu) $page_id = add_submenu_page($parent, $page_title, $menu_title, $capability, $options_slug, array(&$this, '_generate_page'));
+			else $page_id = add_menu_page($page_title, $menu_title, $capability, $options_slug, array(&$this, '_generate_page'), $icon_url, $position);
+
+			$this->admin_pages[$options_slug] = array('page_title' => $page_title, 'menu_title' => $menu_title, 'capability' => $capability, 'options_slug' => $options_slug, 'menu_slug' => $options_slug, 'icon_url' => $icon_url, 'position' => $position);
+	}
+	
+	function _generate_page() { 
+		global $pagenow;
+		$hook = $this->admin_pages[$_GET['page']];
+		if (@$_POST['reset'] == 'true') {
+			delete_option($hook['options_slug']);
+		}
+	?>
+		<div class="wrap" id="custom-metadata-page">
+			<?php if ($_POST['reset']) { ?>
+				<div class="updated settings-error">
+					<p><strong><?php _e('Settings have been reset.') ?></strong></p>
+				</div>	
+			<?php } elseif ($_GET['settings-updated'] && $pagenow != 'options-general.php') { ?>
+				<div class="updated settings-error">
+					<p><strong><?php _e('Settings saved.') ?></strong></p>
+				</div>	
+			<?php } ?>	
+			<? do_action('x_options_messages') ?>
+			<form action="options.php" method="post">
+				<?php 
+				$settings = get_option($hook['options_slug']);			
+				settings_fields($hook['options_slug']);
+				if ($hook['icon_url']) echo '<div class="icon32" style="margin-right: 18px"><img src="'.$hook['icon_url'].'" height="36" alt="'.$hook['page_title'].'"></div>'; else screen_icon( 'tools' ); 	
+				?>
+				<h2><?= $hook['page_title'] ?></h2>
+				<div class="metabox-holder">
+					<div class="postbox-container" style="width: 99%;">
+						<? do_meta_boxes($hook['options_slug'], 'main', null); ?>
+					</div>
+				</div>					
+				<div class="clear"></div>
+				<input type="submit" class="button-primary" name="update" value="<?php _e( 'Save Options' ); ?>" />
+			</form>
+			<form method="post">
+				<input type="hidden" name="reset" value="true">
+				<input type="submit" class="reset-button button-secondary" name="reset_button" value="<?php _e('Delete Options')?>" onclick="return confirm('Click OK to reset. All set will be lost!');"/>				
+			</form>	
+		</div>
+	<?php
+	}
 	
 	function add_field_to_group( $field_slug, $field, $group_slug, $object_types ) {
 		$object_types = (array) $object_types;
@@ -285,8 +369,7 @@ class custom_metadata_manager {
 		$object_types = (array) $object_types;
 		
 		foreach( $object_types as $object_type ) {
-			if( $this->is_registered_object_type( $object_type ) && ! $this->is_group_in_object_type( $group_slug, $object_type ) ) {
-				
+			if( ($this->is_registered_object_type( $object_type ) && ! $this->is_group_in_object_type( $group_slug, $object_type )) || $_GET['page'] ) {
 				$group->fields = array();
 				$this->_push_group( $group_slug, $group, $object_type );
 			}
@@ -368,18 +451,7 @@ class custom_metadata_manager {
 		$fields = $this->get_fields_in_group( $group_slug, $object_type );
 		
 		if( ! empty( $fields ) && $this->is_thing_added_to_object( $group_slug, $group, $object_type, $object_id ) ) {
-			add_meta_box( 
-				$group_slug,
-				$group->label,
-				array( &$this, '_display_post_metadata_box' ),
-				$object_type,
-				$group->context,
-				$group->priority,
-				array(
-					'group' => $group
-					, 'fields' => $fields
-				)
-			);
+			add_meta_box( $group_slug, $group->label, array( &$this, '_display_post_metadata_box' ), $object_type, 'main', $group->priority, array( 'group' => $group, 'fields' => $fields));
 		}
 	}
 	
@@ -406,6 +478,28 @@ class custom_metadata_manager {
 			$this->_display_user_metadata_box( $group_slug, $group, $object_type, $fields );
 	}
 	
+	function add_options_metadata_groups() {		
+		$object_type = $this->_get_object_type_context();
+		
+		$groups = $this->get_groups_in_object_type( $object_type );
+		
+		if( !empty( $groups ) ) {
+			foreach( $groups as $group_slug => $group ) {
+				$this->add_options_metadata_group( $group_slug, $group, $object_type );
+			}
+		}
+	}
+	
+	function add_options_metadata_group( $group_slug, $group, $object_type ) {
+		
+		$fields = $this->get_fields_in_group( $group_slug, $object_type );
+
+		if( ! empty( $fields ) && $this->is_thing_added_to_object( $group_slug, $group, $object_type, null ) ) {
+			if (!$group->label) $group->label = $group_slug;
+			add_meta_box( $group_slug, $group->label, array( &$this, '_display_options_metadata_box' ), $object_type, 'main', $group->priority, array( 'group' => $group, 'fields' => $fields));
+		}
+	}	
+
 	function _display_user_metadata_box( $group_slug, $group, $object_type, $fields ) {
 		global $user_id;
 		?>
@@ -433,8 +527,9 @@ class custom_metadata_manager {
 		$group = $meta_box['args']['group'];
 		$fields = $meta_box['args']['fields'];
 		$object_type = $this->_get_object_type_context();
-		
+				
 		// I really don't like using variable variables, but this is the path of least resistence.
+		// [i think variable variables are nifty - colin]
 		if( isset( $object->{$object_type . '_ID'} ) ) {
 			$object_id =  $object->{$object_type . '_ID'};
 		} elseif ( isset( $object->ID ) ) {
@@ -453,7 +548,22 @@ class custom_metadata_manager {
 		// Each group gets its own nonce
 		$this->_display_group_nonce( $group_slug, $object_type );
 	}
-	
+
+	function _display_options_metadata_box( $object, $meta_box ) {
+		
+		$group_slug = $meta_box['id'];
+		$group = $meta_box['args']['group'];
+		$fields = $meta_box['args']['fields'];
+		$object_type = $this->_get_object_type_context();
+						
+		foreach( $fields as $field_slug => $field ) {
+			if( $this->is_thing_added_to_object( $field_slug, $field, $object_type, $object_id ) ) {
+				$this->_display_metadata_field( $field_slug, $field, $object_type, $object_id );
+			}
+		}
+		
+	}
+		
 	function _display_group_nonce( $group_slug, $object_type ) {
 		$nonce_key = $this->build_nonce_key( $group_slug, $object_type );
 		wp_nonce_field( 'save-metadata', $nonce_key, false );
@@ -506,14 +616,14 @@ class custom_metadata_manager {
 		if ( !$this->verify_group_nonce( $group_slug, $object_type ) ) {
 			return $object_id;
 		}
-		
+
 		$fields = $this->get_fields_in_group( $group_slug, $object_type );
-		
+
 		foreach( $fields as $field_slug => $field ) {
 			$this->save_metadata_field( $field_slug, $field, $object_type, $object_id );
 		}
 	}
-	
+
 	function save_metadata_field( $field_slug, $field, $object_type, $object_id ) {
 		if( isset( $_POST[$field_slug] ) ) {
 			$value = $this->_sanitize_field_value( $field_slug, $field, $object_type, $object_id, $_POST[$field_slug] );
@@ -522,38 +632,38 @@ class custom_metadata_manager {
 			$this->_delete_field_value( $field_slug, $field, $object_type, $object_id );
 		}
 	}
-	
+
 	function get_metadata_field_value( $field_slug, $field, $object_type, $object_id ) {
 		return $this->_get_field_value( $field_slug, $field, $object_type, $object_id );
 	}
-	
+
 	function is_registered_object_type( $object_type ) {
 		return array_key_exists( $object_type, $this->metadata ) /*&& is_array( $this->metadata[$object_type] )*/;
 	}
-	
+
 	function is_registered_group( $group_slug, $object_type ) {
 		return $this->is_registered_object_type( $object_type ) && array_key_exists( $group_slug, $this->get_groups_in_object_type( $object_type ) );
 	}
-	
+
 	function is_registered_field( $field_slug, $group_slug = '', $object_type ) {
 		if( $group_slug )
 			return $this->is_registered_group( $group_slug, $object_type ) && array_key_exists( $field_slug, $this->get_fields_in_group( $group_slug, $object_type ) );
 		else
 			return array_key_exists( $field_slug, $this->get_fields_in_object_type( $object_type ) );
 	}
-	
+
 	function is_field_in_group( $field_slug, $group_slug, $object_type ) {
 		return in_array( $field_slug, $this->get_fields_in_group( $group_slug, $object_type ) );
 	}
-	
+
 	function is_group_in_object_type( $group_slug, $object_type ) {
 		return array_key_exists( $group_slug, $this->get_groups_in_object_type( $object_type ) );
 	}
-	
+
 	function is_field_addable_to_columns( $field_slug, $field ) {
 		return is_string( $field->display_column ) || ( is_bool( $field->display_column ) && $field->display_column );
 	}
-	
+
 	function get_field( $field_slug, $group_slug, $object_type ) {
 		if( $this->is_registered_field( $field_slug, $group_slug, $object_type ) ) {
 			if( $group_slug ) {
@@ -564,7 +674,7 @@ class custom_metadata_manager {
 		}
 		return null;
 	}
-	
+
 	function get_group( $group_slug, $object_type ) {
 		if( $this->is_registered_group( $group_slug, $object_type ) ) {
 			$groups = $this->get_groups_in_object_type( $object_type );
@@ -572,7 +682,7 @@ class custom_metadata_manager {
 		}
 		return null;
 	}
-	
+
 	function get_object_types() {
 		return array_keys( $this->metadata );
 	}
@@ -610,6 +720,7 @@ class custom_metadata_manager {
 	function _push_group( $group_slug, $group, $object_type ) {
 		$this->metadata[$object_type][$group_slug] = $group;
 	}
+
 	function _push_field( $field_slug, $field, $group_slug, $object_type ) {
 		$this->metadata[$object_type][$group_slug]->fields[$field_slug] = $field;
 	}
@@ -698,6 +809,11 @@ class custom_metadata_manager {
 			return 'user';
 		}
 		
+		// This is another hack!
+		if( $_GET['page'] ) {
+			return $_GET['page'];
+		}
+		
 		if( isset( $current_screen->post_type ) ) {
 			$object_type = $current_screen->post_type;
 		} elseif( isset( $current_screen->base ) ) {
@@ -711,17 +827,7 @@ class custom_metadata_manager {
 		
 		return $object_type; 
 	}
-	
-	function _get_display_callback( $field ) {
-		if( $field->display_callback && is_callable( $field->display_callback ) ) {
-			return $field->display_callback;
-		} elseif( in_array( $field->field_type, $this->_field_types ) ) {
-			$callback = array( &$this, sprintf( '_display_%s_field', $field->field_type ) );
-			return is_callable( $callback ) ? $callback : '';
-		}
-		return '';
-	}
-	
+		
 	function _get_value_callback( $field ) {
 		$callback = isset( $field->value_callback ) ? $field->value_callback : '';
 		if( $callback && is_callable( $callback ) )
@@ -757,11 +863,18 @@ class custom_metadata_manager {
 		if( $get_value_callback ) 
 			return call_user_func( $get_value_callback, $object_type, $object_id, $field_slug );
 		
-		if( ! in_array( $object_type, $this->_non_post_types ) )
-			$object_type = 'post';
+		if (!$object_id)	{
+			$option = get_option($object_type);
+			$value = $option[$field_slug];
+		} else {	
+			if ( !in_array( $object_type, $this->_non_post_types ) )
+				$object_type = 'post';
 		
-		// TODO: Allow option for false
-		return get_metadata( $object_type, $object_id, $field_slug, true );
+			// TODO: Allow option for false		
+			$value = get_metadata( $object_type, $object_id, $field_slug, true );
+		}	
+		
+		return $value;
 	}
 	
 	function _save_field_value( $field_slug, $field, $object_type, $object_id, $value ) {
@@ -776,9 +889,13 @@ class custom_metadata_manager {
 		
 		$field_slug = sanitize_key( $field_slug );
 		
-		// TODO: 5th param
-		// TODO: Delete if value is empty?
+		// TODO: 5th param (joey asks why?)
 		update_metadata( $object_type, $object_id, $field_slug, $value );
+		
+		// delete metadata if empty
+		if (empty($value)) {
+			delete_metadata( $object_type, $object_id, $field_slug );
+		}
 		
 	}
 	
@@ -815,90 +932,156 @@ class custom_metadata_manager {
 	}
 	
 	function _display_metadata_field( $field_slug, $field, $object_type, $object_id ) {
-		$value = $this->get_metadata_field_value( $field_slug, $field, $object_type, $object_id );
-		
-		$display_callback = $this->_get_display_callback( $field );
-		
-		if( $display_callback )
-			return call_user_func( $display_callback, $field_slug, $field, $object_type, $object_id, $value );
-	}
-	
-	function _display_text_field( $field_slug, $field, $object_type, $object_id, $value ) {
 		?>
-		<div class="custom-metadata-field">
-			<label for="<?php echo $field_slug; ?>"><?php echo $field->label; ?></label>
-			<input type="text" id="<?php echo $field_slug; ?>" name="<?php echo $field_slug; ?>" value="<?php echo esc_attr( $value ); ?>" />
-			<?php $this->_display_field_description( $field_slug, $field, $object_type, $object_id, $value ); ?>
-		</div>
-		<?php
-	}
-	
-	function _display_textarea_field( $field_slug, $field, $object_type, $object_id, $value ) {
-		?>
-		<div class="custom-metadata-field">
-			<label for="<?php echo $field_slug; ?>"><?php echo $field->label; ?></label>
-			<textarea id="<?php echo $field_slug; ?>" name="<?php echo $field_slug; ?>"><?php echo $value; // TODO: Escape this? ?></textarea>
-			<?php $this->_display_field_description( $field_slug, $field, $object_type, $object_id, $value ); ?>
-		</div>
-		<?php
-	}
-	
-	function _display_checkbox_field( $field_slug, $field, $object_type, $object_id, $value ) {
-		$checked = $value ? ' checked="checked"' : '';
-		?>
-		<div class="custom-metadata-field">
-			<label for="<?php echo $field_slug; ?>" class="selectit">
-				<input type="checkbox" id="<?php echo $field_slug; ?>" name="<?php echo $field_slug; ?>" <?php echo $checked; ?> />
-				<?php echo $field->label; ?>
-			</label>
-			<?php $this->_display_field_description( $field_slug, $field, $object_type, $object_id, $value ); ?>
-		</div>
-		<?php
-	}
-	
-	function _display_radio_field( $field_slug, $field, $object_type, $object_id, $value ) {
-		?>
-		<div class="custom-metadata-field">
-			<label><?php echo $field->label; ?></label>
-			<?php $this->_display_field_description( $field_slug, $field, $object_type, $object_id, $value ); ?>
+		<div class="custom-metadata-field <?php echo $field->field_type ?>">
+			<?php
+			$value = $this->get_metadata_field_value( $field_slug, $field, $object_type, $object_id );
 			
-			<?php foreach( $field->values as $value_slug => $value_label ) : ?>
-				<?php
-				$checked = ( $value == $value_slug ) ? ' checked="checked"' : '';
-				$value_id = sprintf( '%s_%s', $field_slug, $value_slug );
-				?>
-				<label for="<?php echo $value_id; ?>" class="selectit">
-					<input type="radio" id="<?php echo $value_id; ?>" name="<?php echo $field_slug; ?>" value="<?php echo $value_slug ?>" <?php echo $checked; ?> />
-					<?php echo $value_label; ?>
-				</label>
-			<?php endforeach; ?>
-		</div>
-		<?php
-	}
-	
-	function _display_select_field( $field_slug, $field, $object_type, $object_id, $value ) {
-		?>
-		<div class="custom-metadata-field">
-			<label for="<?php echo $field_slug; ?>">
-				<?php echo $field->label; ?>
-			</label>
+			if (!in_array($object_type, $this->_non_post_types)) global $post;
+			if ($field->multiple && @!in_array($field->field_type, $this->_cloneable_field_types)) {
+				$field->multiple = false;
+				echo '<p class="error"><strong>Note:</strong> this field type cannot be multiplied</p>';
+			}	
 			
-			<select id="<?php echo $field_slug; ?>" name="<?php echo $field_slug; ?>">
-				<?php foreach( $field->values as $value_slug => $value_label ) : ?>
-					<?php
-					$selected = ( $value == $value_slug ) ? ' selected="selected"' : '';
-					$value_id = $field_slug . $value_slug;
-					?>
-					<option value="<?php echo $value_slug ?>" <?php echo $selected; ?>>
-						<?php echo $value_label; ?>
-					</option>
-				<?php endforeach; ?>
-			</select>
-			<?php $this->_display_field_description( $field_slug, $field, $object_type, $object_id, $value ); ?>
-		</div>
-		<?php
-	}
+			if ($_GET['page']) $field_id = $object_type.'['.$field_slug.']';
+			elseif ($field->multiple) $field_id = $field_slug.'[]';
+			else $field_id = $field_slug;
+			
+			if (get_post_type()) $numb = $post->ID; else $numb = 1; ?>			
+			<script>var numb = '<?php echo $numb ?>'; </script>			
+			
+			<label for="<?php echo $field_slug; ?>"><?php echo $field->label; ?></label>
+			<?php
+			// make sure $value is an array
+				if (!$value) $value = ''; // if empty, give it an empty string instead
+				$value = (array)$value;
+				$count = 1;
+				foreach( $value as $v ) :	?>
+				
+				<div class="<?php echo $field_slug ?> cloneable" id="<?php echo $field_slug ?>-<?php echo $count;?>">			
 	
+					<?php switch ($field->field_type) :
+							case 'text': ?>
+							<input type="text" id="<?php echo $field_slug; ?>" name="<?php echo $field_id; ?>" value="<?php echo esc_attr( $v ); ?>" />
+						<?php break; ?>
+			
+						<?php case 'textarea': ?>
+							<textarea id="<?php echo $field_slug; ?>" name="<?php echo $field_id; ?>"><?php echo esc_attr($v); ?></textarea>
+						<?php break; ?>
+
+						<?php case 'password': ?>
+							<input type="password" id="<?php echo $field_slug; ?>" name="<?php echo $field_id; ?>" value="<?php echo esc_attr($v); ?>" />
+						<?php break; ?>
+			
+						<?php case 'checkbox': ?>
+							<?php $checked = $v ? ' checked="checked"' : ''; ?>
+							<input type="checkbox" id="<?php echo $field_slug; ?>" name="<?php echo $field_id; ?>" <?php echo $checked; ?> />
+						<?php break; ?>
+
+						<?php case 'radio': ?>
+							<?php foreach( $field->values as $value_slug => $value_label ) : ?>
+								<?php
+								$checked = ( $v == $value_slug ) ? ' checked="checked"' : '';
+								$value_id = sprintf( '%s_%s', $field_slug, $value_slug );
+								?>
+								<label for="<?php echo $value_id; ?>" class="selectit">
+									<input type="radio" id="<?php echo $value_id; ?>" name="<?php echo $field_id; ?>" id="<?php echo $value_id; ?>" value="<?php echo $value_slug ?>" <?php echo $checked; ?> />
+									<?php echo $value_label; ?>
+								</label>
+							<?php endforeach; ?>
+						<?php break; ?>
+
+						<?php case 'select': ?>
+							<select id="<?php echo $field_slug; ?>" name="<?php echo $field_id; ?>">
+								<?php foreach( $field->values as $value_slug => $value_label ) : ?>
+									<?php
+									$selected = ( $v == $value_slug ) ? ' selected="selected"' : '';
+									$value_id = $field_slug . $value_slug;
+									?>
+									<option value="<?php echo $value_slug ?>" <?php echo $selected; ?>>
+										<?php echo $value_label; ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+						<?php break; ?>
+
+						<?php case 'datepicker': ?>
+							<input type="text" name="<?php echo $field_id; ?>" value="<?php echo $v; ?>"/>
+						<?php break; ?>
+
+						<?php case 'wysiwyg': ?>
+							<div class="customEditor">
+								<textarea name="<?php echo $field_id; ?>" id="<?php echo $field_slug; ?>" cols="60" rows="7" style="width:97%"><?php if ($v) echo wpautop($v); else echo ''; ?></textarea>
+							</div>
+						<?php break; ?>
+
+						<?php case 'upload': ?>
+							<input type="text" name="<?php echo $field_id; ?>" value="<?php echo $v; ?>" class="upload_field"/>
+							<input type="button" title="<?php echo $post->ID ?>" class="button upload_button" value="Upload" />
+						<?php break; ?>
+
+						<?php case 'taxonomy_select': ?>
+							<select name="<?php echo $field_id; ?>" id="<?php echo $field_slug; ?>[]">
+							<?php	
+							$terms = get_terms( $field->taxonomy, array('hide_empty' => false));
+							foreach ( $terms as $term ) { ?>
+								<option value="<?php echo $term->slug ?>"<?php if ($term->slug == $v) echo ' selected' ?>><?php echo $term->name ?></option>
+							<? }
+							?>	
+							</select>
+						<?php break; ?>
+
+						<?php case 'taxonomy_radio':
+							$terms = get_terms( $field->taxonomy, array('hide_empty' => false) );
+							foreach ( $terms as $term ) { ?>								
+								<label for="<?php echo $term->slug; ?>" class="selectit">
+									<input type="radio" name="<?php echo $field_id ?>" value="<?php echo $term->slug ?>" id="<?php echo $term->slug ?>"<?php if ($term->slug == $v) echo ' checked' ?>>
+									<?php echo $term->name ?>
+								</label>								
+						<?php } ?>
+						<?php break; ?>				
+
+						<?php case 'attachment_list' : ?>					
+							<input class="upload_field" type="text" name="<?php echo $field_id ?>" value="" />
+							<input class="upload_button button" type="button" value="Upload" />
+							<? $args = array('post_type' => 'attachment', 'numberposts' => null, 'post_status' => null, 'post_parent' => $post->ID); 
+							$attachments = get_posts($args);
+							if ($attachments) {
+								echo '<ul class="attach_list">';
+								foreach ($attachments as $attachment) {
+									echo '<li>'.wp_get_attachment_link($attachment->ID, 'thumbnail', 0, 0, 'Download');
+									echo '<span>';
+									echo apply_filters('the_title', '&nbsp;'.$attachment->post_title);
+									echo '</span></li>';
+								}
+								echo '</ul>';
+							} ?>
+						<?php break; ?>
+
+
+						<?php default: _e( 'Ooops! Unknown field type "'.$field->field_type.'"', 'custom-metadata-manager' ); ?>
+						<?php break; ?>
+
+					<?php endswitch; ?>
+				
+					<?php if ($count > 1) : ?>
+						<a href="#" class="del-multiple hide-if-no-js" style="color:red;">Delete</a>
+					<? endif; $count++ ?>
+
+				</div>
+
+			<?php endforeach; ?>	
+		<? if ($field->multiple) : ?>
+			<p><a href="#" class="add-multiple hide-if-no-js" id="add-<?php echo $field_slug ?>">+ Add New</a></p>
+		<? endif;?>	
+
+		<?php $this->_display_field_description( $field_slug, $field, $object_type, $object_id, $value ); ?>
+
+		</div>
+
+	<?php
+	}	
+
 	function _display_field_description( $field_slug, $field, $object_type, $object_id, $value ) {
 		?>
 		<?php if( $field->description ) : ?>
@@ -906,8 +1089,8 @@ class custom_metadata_manager {
 		<?php endif; ?>
 		<?php
 	}
-	
-	function _display_registration_errors( ) {
+
+	function _display_registration_errors() {
 		if( !empty( $this->errors ) ) {
 			?>
 			<div class="message error">
@@ -918,8 +1101,8 @@ class custom_metadata_manager {
 			<?php
 		}
 	}
-	
-	function debug($msg, $object) {
+
+	function debug( $msg, $object ) {
 		if( CUSTOM_METADATA_MANAGER_DEBUG ) {
 			echo '<hr />';
 			echo sprintf('<p>%s</p>', $msg);
@@ -928,7 +1111,13 @@ class custom_metadata_manager {
 			echo '</pre>';
 		}
 	}
+
 }
+
+global $custom_metadata_manager;
+$custom_metadata_manager = new custom_metadata_manager();
+
+endif; // !class_exists
 
 function x_add_metadata_field( $slug, $object_types = 'post', $args = array() ) {
 	global $custom_metadata_manager;
@@ -940,5 +1129,8 @@ function x_add_metadata_group( $slug, $object_types, $args = array() ) {
 	$custom_metadata_manager->add_metadata_group( $slug, $object_types, $args );
 }
 
-global $custom_metadata_manager;
-$custom_metadata_manager = new custom_metadata_manager();
+function x_add_option_page( $page_title = 'Options Page', $menu_title = 'Options Page', $capability = 'manage_options', $options_slug = 'x_options', $icon_url = null, $position = null, $submenu = false, $parent = null ) {
+	global $custom_metadata_manager;
+	$custom_metadata_manager->add_option_page($page_title, $menu_title, $capability, $options_slug, $icon_url, $position, $submenu, $parent);
+}
+
