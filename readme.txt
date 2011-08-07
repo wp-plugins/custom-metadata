@@ -4,7 +4,7 @@ Donate link: http://digitalize.ca/donate
 Tags: custom metadata, custom metadata manager metadata, postmeta, post meta, user meta, custom post types, custom fields, options, options pages, metabox
 Requires at least: 3.0
 Tested up to: 3.2.1
-Stable tag: 0.4
+Stable tag: 0.3
 
 An easy way to add custom fields to your object types (post, pages, custom post types, users) & to generate option pages
 
