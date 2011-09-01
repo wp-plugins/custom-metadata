@@ -22,10 +22,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 add_action( 'init', 'init_my_custom_post_types' );
 
 function init_my_custom_post_types() {
+	
 	register_post_type( 'custom-metatadata-milestone', array(
 		'labels' => array(
 			'name' => 'Milestones'
-			, 'singualar_name' => 'Milestone'
+			, 'singular_name' => 'Milestone'
 			, 'add_new' => 'Add New'
 			, 'add_new_item' => 'Add New Milestone'
 			, 'edit_item' => 'Edit Milestone'
@@ -48,8 +49,9 @@ function init_my_custom_post_types() {
 add_action( 'admin_init', 'init_my_custom_fields' );
 
 function init_my_custom_fields() {
-	
+
 	if( function_exists( 'x_add_metadata_group' ) && function_exists( 'x_add_metadata_field' ) ) {
+
 		x_add_metadata_group( 'x_metaBox1', 'post', $args = array(
 			'label' => 'Group with Multiple Fields'
 			, 'include' => 2476

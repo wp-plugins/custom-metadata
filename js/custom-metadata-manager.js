@@ -11,14 +11,16 @@ jQuery(document).ready(function($) {
 			var instanceNum = parseInt(idName.split('-')[1])+1;
 			idName = idName.split('-')[0]+'-'+instanceNum;
 			$clone.attr('id',idName);
-			$clone.insertAfter($last).find(':input[type=text]').val('');
+			$clone.insertAfter($last).hide().fadeIn().find(':input[type=text]').val('');
 		});
 	} 
 	
 	if ( $('.del-multiple').length )	 {
 		$('.del-multiple').live('click', function(e) {
 			e.preventDefault();
-			$(this).parent().remove();
+			$(this).parent().fadeOut('normal', function(){
+				$(this).remove();
+			});
 		});
 	}
 

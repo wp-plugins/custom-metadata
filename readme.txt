@@ -1,10 +1,10 @@
 === Custom Metadata Manager ===
 Contributors: batmoo, jkudish, cvernon, stresslimit
 Donate link: http://digitalize.ca/donate
-Tags: custom metadata, custom metadata manager metadata, postmeta, post meta, user meta, custom post types, custom fields, options, options pages, metabox
+Tags: custom metadata, custom metadata manager metadata, postmeta, post meta, user meta, custom post types, custom fields, metabox, metadata api, metadata
 Requires at least: 3.0
-Tested up to: 3.2.1
-Stable tag: 0.3
+Tested up to: 3.3
+Stable tag: 0.5
 
 An easy way to add custom fields to your object types (post, pages, custom post types, users) & to generate option pages
 
@@ -45,7 +45,7 @@ For another really well-done, really powerful code-based plugin for managing cus
 
 = Why isn't the function just `add_metadata_field`? Do you really need the stupid `x_`? =
 
-We're being good and ["namespacing" my public functions](http://andrewnacin.com/2010/05/11/in-wordpress-prefix-everything/). You should too.
+We're being good and ["namespacing" our public functions](http://andrewnacin.com/2010/05/11/in-wordpress-prefix-everything/). You should too.
 
 == Screenshots ==
 
@@ -55,6 +55,16 @@ We're being good and ["namespacing" my public functions](http://andrewnacin.com/
 4. Adding custom columns is also easy. You can go with a default display, or specify your own output callback
 
 == Changelog ==
+
+= 0.5 =
+* Making the changes from 0.4 public
+* Removed ability to generate option pages; after further consideration this is out of scope for this project
+* Removed attachment_list field, useless
+* Dates now save as unix timestamp
+* Taxonomy fields now save as both a custom field and as their proper taxonomy (will consider adding the ability to enable/disable this in a future version)
+* Multiplied fields no longer save as a serialized array, instead they save as multiple metadata with the same key (metadata api supports multiples!) - remember to set the last param to false to get multiple values. 
+* NOTE: currently multiplied fields will display out of order after saving, however this should not affect anything else other than the admin, should be fixed soon
+* Other small improvements
 
 = 0.4 =
 * Enhanced the code which generates the different field types
