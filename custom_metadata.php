@@ -842,7 +842,7 @@ class custom_metadata_manager {
 
 	function _display_metadata_field( $field_slug, $field, $object_type, $object_id ) {
 		if (isset($field->display_callback) && function_exists($field->display_callback)) :
-			call_user_func($field->display_callback);
+			call_user_func($field->display_callback, $field_slug, $field, $object_type, $object_id);
 		else :
 		?>
 		<div class="custom-metadata-field <?php echo $field->field_type ?>">
