@@ -20,7 +20,9 @@ This plugin handles all that heavy-lifting for you behind-the-scenes, so that yo
 
 The API is similar to that used for registering custom post types and taxonomies so it should be familiar territory.
 
-Like what you see? Want more field types and features added? [Get in touch](mailto:batmoo@gmail.com)
+**NOTE**: The plugin now requires WordPress 3.3+ (chiefly for the wysiwyg & datepicker fields)
+
+Like what you see? Want more field types and features added? [Get in touch](mailto:tech@stresslimitdesign.com) or [contribute on github](https://github.com/jkudish/custom-metadata)
 
 > *See "Other Notes" section for usage information*
 
