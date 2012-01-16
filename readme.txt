@@ -293,6 +293,10 @@ Stuff we have planned for the future:
 
 == Upgrade Notice ==
 
+= 0.7 =
+
+Version 0.6 and higher of the plugin uses new APIs available in WordPress 3.3+, so please make sure you're running WordPress 3.3 or higher before upgrading this plugin. Version 0.7 adds the ability to have readonly fields.
+
 = 0.6 =
 
 Version 0.6 and higher of the plugin uses new APIs available in WordPress 3.3+, so please make sure you're running WordPress 3.3 or higher before upgrading this plugin.
