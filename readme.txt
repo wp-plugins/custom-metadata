@@ -57,6 +57,10 @@ We're being good and ["namespacing" our public functions](http://andrewnacin.com
 
 == Changelog ==
 
+= 0.7 =
+
+* added the ability to have readonly fields with the new `readonly` paramater
+
 = 0.6 =
 
 * note: the plugin now requires WordPress 3.3+ (chiefly for the wysiwyg & datepicker fields)
@@ -228,6 +232,7 @@ $args = array(
 	'exclude' => '', // see below for details
 	'include' => '', // see below for details
 	'multiple' => false, // true or false, can the field be duplicated with a click of a button?
+	'readonly' => false, // makes the field be readonly (works with text, textarea, password, upload and datepicker fields)
 );
 `
 
