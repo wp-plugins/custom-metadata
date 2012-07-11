@@ -4,7 +4,7 @@ Plugin Name: Custom Metadata Manager
 Plugin URI: http://wordpress.org/extend/plugins/custom-metadata/
 Description: An easy way to add custom fields to your object types (post, pages, custom post types, users)
 Author: Mohammad Jangda, Joachim Kudish & Colin Vernon
-Version: 0.7
+Version: 0.7.1
 Author URI: http://digitalize.ca/wordpress-plugins/custom-metadata/
 
 Copyright 2010-2012 Mohammad Jangda, Joachim Kudish, Colin Vernon
