@@ -3,8 +3,8 @@ Contributors: batmoo, jkudish, cvernon, stresslimit
 Donate link: http://digitalize.ca/donate
 Tags: custom metadata, custom metadata manager metadata, postmeta, post meta, user meta, custom post types, custom fields, metabox, metadata api, metadata
 Requires at least: 3.3
-Tested up to: 3.4-alpha
-Stable tag: 0.7
+Tested up to: 3.4.1
+Stable tag: 0.7.1
 
 An easy way to add custom fields to your object types (post, pages, custom post types, users)
 
@@ -56,6 +56,11 @@ We're being good and ["namespacing" our public functions](http://andrewnacin.com
 3. Adding custom columns is also easy. You can go with a default display, or specify your own output callback
 
 == Changelog ==
+
+= 0.7.1 =
+
+* fix a bug where non-image file upload path doesn't get inserted into the input when clicking Insert into Post from the media manager
+* add 'editor' and 'richtext' as synonyms of 'wysiwyg' field type
 
 = 0.7 =
 
@@ -284,6 +289,7 @@ For examples, please see the [custom_metadata_examples.php](https://github.com/j
 
 Stuff we have planned for the future:
 
+* Ability to clone (multiple) groups of fields
 * Ability Pass in attributes for built-in fields (e.g. class, data-*, etc.)
 * Additional field types (multi-select, multi-checkbox)
 * Limit or exclude groups and fields using a custom callback

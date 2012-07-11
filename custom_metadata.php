@@ -67,7 +67,7 @@ class custom_metadata_manager {
 	// Column filter names
 	var $_column_types = array( 'posts', 'pages', 'users', 'comments' );
 	// field types
-	var $_field_types = array( 'text', 'textarea', 'password', 'checkbox', 'radio', 'select', 'upload', 'wysiwyg', 'datepicker', 'taxonomy_select', 'taxonomy_radio' );
+	var $_field_types = array( 'text', 'textarea', 'password', 'checkbox', 'radio', 'select', 'upload', 'wysiwyg', 'editor', 'richtext', 'datepicker', 'taxonomy_select', 'taxonomy_radio' );
 	// field types that are cloneable
 	var $_cloneable_field_types = array( 'text', 'textarea', 'upload', 'password');
 	// Object types whose columns are generated through apply_filters instead of do_action
@@ -934,7 +934,7 @@ class custom_metadata_manager {
 							<input type="text" name="<?php echo $field_id; ?>" value="<?php echo @date('m/d/Y', $v); ?>" <?php echo $readonly_str ?>/>
 						<?php break; ?>
 
-						<?php case 'wysiwyg': ?>
+						<?php case 'wysiwyg': case 'editor': case 'richtext' ?>
 							<?php
 								$args = apply_filters('custom_metadata_manager_wysiwyg_args_field_'.$field_id, $this->default_editor_args, $field_slug, $field, $object_type, $object_id );
 							 	wp_editor($v, $field_id, $args);
